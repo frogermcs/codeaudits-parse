@@ -1,0 +1,41 @@
+name: CodeAudits-Action
+description: Github Action to parse and submit your source code to CodeAudits.ai
+author: CodeAudits.ai
+
+# Add your action's branding here. This will appear on the GitHub Marketplace.
+branding:
+  icon: compass
+  color: gray-dark
+
+# Define your inputs here.
+inputs:
+  style:
+    description: Parsed document style. Use 'markdown', 'xml' or 'plain'
+    default: 'markdown'
+  compress:
+    description: Run intelligent code parsing to reduce tokens
+    default: 'false'
+  push-to-codeaudits:
+    description:
+      Flag whether action should upload parsed repo to CodeAudits.ai. If false,
+      parsed file still will be generated but not uploaded.
+    default: 'true'
+  codeaudits-base-path:
+    description: Base URL to send parsed repo to.
+    default: 'https://codeaudits.ai/'
+  codeaudits-api-key:
+    description:
+      CodeAudits API key that will assign repository to your private account
+
+# Define your outputs here.
+outputs:
+  parse-metadata:
+    description: Metadata of the parsed repository
+  parsed-file-name:
+    description: Name of the parsed output file
+  submission-status:
+    description: Result of the submission to CodeAudits
+
+runs:
+  using: docker
+  image: Dockerfile
