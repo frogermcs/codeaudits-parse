@@ -1,0 +1,26 @@
+name: Push codebase for LLM audits (public)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  parse-repository:
+    runs-on: ubuntu-latest
+    name: Parse this repository for CodeAudits
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Parse Repository
+        uses: frogermcs/codeaudits-action-docker@v1.0.0
+        id: parse
+        with:
+          style: markdown
+          compress: false
+          push-to-codeaudits: true
+      
+      - name: Upload Prompt File as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: parsed-repo.txt
+          path: parsed-repo.txt
