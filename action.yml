@@ -2,12 +2,10 @@ name: CodeAudits-Action
 description: Github Action to parse and submit your source code to CodeAudits.ai
 author: CodeAudits.ai
 
-# Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
   icon: compass
   color: gray-dark
 
-# Define your inputs here.
 inputs:
   style:
     description: Parsed document style. Use 'markdown', 'xml' or 'plain'
@@ -26,6 +24,10 @@ inputs:
   codeaudits-api-key:
     description:
       CodeAudits API key that will assign repository to your private account
+  working-directory:
+    description: The directory in which to run the action. Defaults to the repository root.
+    default: '.'
+    required: false
 
 # Define your outputs here.
 outputs:
