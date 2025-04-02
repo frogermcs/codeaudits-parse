@@ -1,4 +1,4 @@
-name: Test CodeAudits Action with Working Directory
+name: TEST - CodeAudits Action with Working Directory
 
 on:
   workflow_dispatch:

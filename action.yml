@@ -1,6 +1,6 @@
 name: CodeAudits-Action
 description: Github Action to parse and submit your source code to CodeAudits.ai
-author: CodeAudits.ai
+author: Miroslaw Stanek
 
 branding:
   icon: compass
