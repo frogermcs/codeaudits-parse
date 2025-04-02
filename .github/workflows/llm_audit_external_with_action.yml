@@ -1,0 +1,40 @@
+name: Push external codebase for LLM audits (public)
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo_url:
+        description: 'Repo URL for audit'
+        default: 'https://github.com/frogermcs/codebase-dump'
+        required: true
+        type: string
+
+jobs:
+  test-action:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract repo name from URL
+        id: extract_repo_name
+        run: |
+          REPO_URL="${{ github.event.inputs.repo_url }}"
+          REPO_NAME=$(basename "$REPO_URL" .git)
+          echo "repo_name=$REPO_NAME" >> $GITHUB_OUTPUT
+
+      - name: Clone target repository with gh
+        run: gh repo clone ${{ github.event.inputs.repo_url }} ${{ steps.extract_repo_name.outputs.repo_name }} -- --depth 1
+        env:
+          GH_TOKEN: ${{ secrets.GH_CLONE_PRIV_REPOS }}
+
+      - name: Parse Repository
+        uses: frogermcs/codeaudits-parse@v1.1.0
+        with:
+          style: markdown
+          compress: true
+          push-to-codeaudits: false
+          working-directory: ${{ steps.extract_repo_name.outputs.repo_name }}
+
+      - name: Upload parsed file as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: parsed-repo
+          path: parsed-repo.txt
