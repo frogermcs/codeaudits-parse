@@ -6,7 +6,7 @@ A GitHub Action that parses your repository's code and submits it to [CodeAudits
 
 ## Overview
 
-This action uses the [Repomix](https://github.com/githubnext/repomix) library to generate a comprehensive text representation of your codebase and optionally submits it to CodeAudits.ai. This allows you to:
+This action uses the [Repomix](https://github.com/yamadashy/repomix) library to generate a comprehensive text representation of your codebase and optionally submits it to CodeAudits.ai. This allows you to:
 
 - Create a single document containing your entire codebase in a readable format
 - Analyze your code structure and organization
