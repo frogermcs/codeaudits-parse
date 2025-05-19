@@ -4,6 +4,8 @@
 
 A GitHub Action that parses your repository's code and submits it to [CodeAudits.ai](https://codeaudits.ai/) for analysis.
 
+Here's [CodeAudits documentation](https://codeaudits.ai/docs/howto) about how to use this GH Action.
+
 ## Overview
 
 This action uses the [Repomix](https://github.com/yamadashy/repomix) library to generate a comprehensive text representation of your codebase and optionally submits it to CodeAudits.ai. This allows you to:
