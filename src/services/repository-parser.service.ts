@@ -1,4 +1,4 @@
-import { CliOptions, runCli } from 'repomix'
+import { CliOptions, PackResult, runCli } from 'repomix'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { ICoreInterface } from '../interfaces/core.interface.js'
@@ -11,7 +11,7 @@ export interface RepositoryParseOptions {
 }
 
 export interface ParseResult {
-  packResult: any
+  packResult: PackResult
   outputPath: string
   absoluteWorkingDirectory: string
 }
@@ -45,6 +45,7 @@ export class RepositoryParser {
       quiet: true,
       compress: compress
     }
+    this.core.debug(`Running repomix with options: ${JSON.stringify(cliOptions)}`)
 
     const result = await runCli(['.'], absoluteWorkingDirectory, cliOptions)
     if (!result) {
@@ -52,8 +53,6 @@ export class RepositoryParser {
     }
 
     const { packResult } = result
-
-    this.core.setOutput('parse-metadata', JSON.stringify(packResult))
     this.core.setOutput('parsed-file-name', outputFilePath)
 
     this.core.info(
@@ -71,8 +70,17 @@ export class RepositoryParser {
   /**
    * Generate parsing summary for display
    */
-  generateSummary(options: RepositoryParseOptions, packResult: any): void {
+  generateSummary(options: RepositoryParseOptions, packResult: PackResult): void {
     const { style, compress, workingDirectory, outputFilePath } = options
+
+    const parseMetadata = {
+        'fileCharCounts' : packResult.fileCharCounts,
+        'totalFiles' : packResult.totalFiles,
+        'totalTokens': packResult.totalTokens,
+        'suspiciousFilesResults': packResult.suspiciousFilesResults,
+        'suspiciousGitDiffResults': packResult.suspiciousGitDiffResults,
+        'processedFilesCount': packResult.processedFiles.length,
+    }
 
     this.core.summary
       .addHeading('Code Parsing Summary')
@@ -84,7 +92,7 @@ export class RepositoryParser {
       ])
       .addBreak()
       .addHeading('Parsed Metadata', 2)
-      .addCodeBlock(JSON.stringify(packResult, null, 2), 'json')
+      .addCodeBlock(JSON.stringify(parseMetadata, null, 2), 'json')
   }
 
   /**
