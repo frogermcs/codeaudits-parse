@@ -1,5 +1,5 @@
 name: CodeAudits-Action
-description: Github Action to parse and submit your source code to CodeAudits.ai
+description: Github Action to parse your source code
 author: Miroslaw Stanek
 
 branding:
@@ -13,17 +13,6 @@ inputs:
   compress:
     description: Run intelligent code parsing to reduce tokens
     default: 'false'
-  push-to-codeaudits:
-    description:
-      Flag whether action should upload parsed repo to CodeAudits.ai. If false,
-      parsed file still will be generated but not uploaded.
-    default: 'true'
-  codeaudits-base-path:
-    description: Base URL to send parsed repo to.
-    default: 'https://codeaudits.ai/'
-  codeaudits-api-key:
-    description:
-      CodeAudits API key that will assign repository to your private account
   working-directory:
     description: The directory in which to run the action. Defaults to the repository root.
     default: '.'

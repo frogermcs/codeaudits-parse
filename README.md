@@ -46,8 +46,6 @@ jobs:
         with:
           style: markdown            # Format of the parsed output
           compress: true             # Enable intelligent code parsing to reduce tokens
-          push-to-codeaudits: true   # Submit to CodeAudits.ai
-          codeaudits-api-key: ${{ secrets.CODEAUDITS_API_KEY }}  # Optional: For private accounts
       
       - name: Upload parsed file as artifact
         uses: actions/upload-artifact@v4
@@ -62,9 +60,6 @@ jobs:
 |-------|-------------|---------|----------|
 | `style` | Parsed document style. Use 'markdown', 'xml' or 'plain' | `markdown` | No |
 | `compress` | Run intelligent code parsing to reduce tokens | `false` | No |
-| `push-to-codeaudits` | Whether to upload parsed repo to CodeAudits.ai | `true` | No |
-| `codeaudits-base-path` | Base URL for the CodeAudits API | `https://codeaudits.ai/` | No |
-| `codeaudits-api-key` | CodeAudits API key for assignment to your private account | - | No |
 
 ## Outputs
 
@@ -83,28 +78,6 @@ jobs:
   uses: codeaudits/codeaudits-action@v1
   with:
     style: markdown
-    push-to-codeaudits: true
-```
-
-### Parse Only (without submission)
-
-```yaml
-- name: Parse Repository Without Submitting
-  uses: codeaudits/codeaudits-action@v1
-  with:
-    style: markdown
-    push-to-codeaudits: false
-```
-
-### With Custom API Key
-
-```yaml
-- name: Run CodeAudits Analysis with API Key
-  uses: codeaudits/codeaudits-action@v1
-  with:
-    style: markdown
-    push-to-codeaudits: true
-    codeaudits-api-key: ${{ secrets.CODEAUDITS_API_KEY }}
 ```
 
 ## Viewing Results
@@ -112,16 +85,7 @@ jobs:
 After the action completes:
 
 1. The parsed repository will be available as a GitHub Actions artifact named `parsed-repo.txt`
-2. If submission to CodeAudits was enabled, a link to the analysis will be provided in the workflow run summary
-3. Detailed metadata about the parsing process will be available in the job outputs
-
-## Privacy and Security
-
-When using this action with `push-to-codeaudits: true`, your code will be sent to CodeAudits.ai for analysis. If you have concerns about sensitive code, you can:
-
-- Use `push-to-codeaudits: false` to only generate the parsed file without submitting it
-- Create a `.repomixignore` file to exclude sensitive files from parsing
-- Use a private instance of CodeAudits with the `codeaudits-base-path` option
+2. Detailed metadata about the parsing process will be available in the job outputs
 
 ## License
 

@@ -1,4 +1,4 @@
-name: Push external codebase for LLM audits (public)
+name: External codebase - parse for LLM
 
 on:
   workflow_dispatch:
@@ -30,7 +30,6 @@ jobs:
         with:
           style: markdown
           compress: true
-          push-to-codeaudits: false
           working-directory: ${{ steps.extract_repo_name.outputs.repo_name }}
 
       - name: Upload parsed file as artifact
