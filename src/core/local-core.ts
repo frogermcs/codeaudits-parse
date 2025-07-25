@@ -12,10 +12,7 @@ export class LocalCore implements ICoreInterface {
     this.inputs = {
       'style': options.style || 'plain',
       'compress': options.compress?.toString() || 'false',
-      'push-to-codeaudits': options.pushToCodeaudits?.toString() || 'false',
       'working-directory': options.workingDirectory || '.',
-      'codeaudits-api-key': options.codeauditsApiKey || '',
-      'codeaudits-base-path': options.codeauditsBasePath || '',
       'output': options.output || 'parsed-repo.txt'
     }
   }

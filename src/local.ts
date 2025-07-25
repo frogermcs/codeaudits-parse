@@ -12,7 +12,7 @@ const program = new Command()
 
 program
   .name('codeaudits-parse')
-  .description('Parse repository code and optionally submit to CodeAudits')
+  .description('Parse repository code')
   .version('1.0.0')
 
 program
@@ -20,9 +20,6 @@ program
   .option('-c, --compress', 'Enable compression', false)
   .option('-w, --working-directory <dir>', 'Working directory', '.')
   .option('-o, --output <file>', 'Output file name', 'parsed-repo.txt')
-  .option('--push-to-codeaudits', 'Submit to CodeAudits', false)
-  .option('--codeaudits-api-key <key>', 'CodeAudits API key')
-  .option('--codeaudits-base-path <path>', 'CodeAudits base path')
   .action(async (options) => {
     try {
       await runLocal(options)

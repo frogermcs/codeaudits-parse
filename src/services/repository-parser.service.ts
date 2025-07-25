@@ -93,26 +93,4 @@ export class RepositoryParser {
   async readParsedContent(absoluteWorkingDirectory: string, outputFilePath: string): Promise<string> {
     return await fs.readFile(path.join(absoluteWorkingDirectory, outputFilePath), 'utf-8')
   }
-
-  /**
-   * Extract metadata for CodeAudits submission
-   */
-  extractMetadata(packResult: any): Record<string, any> {
-    const topFiles = 
-      Object.entries(packResult.fileTokenCounts)
-      .sort((a, b) => (b[1] as number) - (a[1] as number))
-      .slice(0, Math.min(10, Object.keys(packResult.fileTokenCounts).length))
-
-    const topFilesResp = topFiles.reduce<Record<string, number>>((obj, [filename, tokens]) => {
-      obj[filename] = tokens as number
-      return obj
-    }, {})
-    
-    return {
-      totalFiles: packResult.totalFiles,
-      totalCharacters: packResult.totalCharacters,
-      totalTokens: packResult.totalTokens,
-      topFiles: topFilesResp
-    }
-  }
 }

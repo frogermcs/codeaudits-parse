@@ -1,0 +1,1258 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+The content has been processed where security check has been disabled.
+
+================================================================
+File Summary
+================================================================
+
+Purpose:
+--------
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+
+File Format:
+------------
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Multiple file entries, each consisting of:
+  a. A separator line (================)
+  b. The file path (File: path/to/file)
+  c. Another separator line
+  d. The full contents of the file
+  e. A blank line
+
+Usage Guidelines:
+-----------------
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+
+Notes:
+------
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Security check has been disabled - content may contain sensitive information
+- Files are sorted by Git change count (files with more changes are at the bottom)
+
+Additional Info:
+----------------
+
+================================================================
+Directory Structure
+================================================================
+.github/
+  workflows/
+    llm_audit_external_with_action.yml
+    llm_audit_external.yml
+    llm_audit_public.yml
+    llm_audit_with_action.yml
+src/
+  app/
+    codeaudits-parse.app.ts
+  core/
+    github-actions-core.ts
+    local-core.ts
+  interfaces/
+    core.interface.ts
+  services/
+    repository-parser.service.ts
+  index.ts
+  local.ts
+  main.ts
+.gitattributes
+.gitignore
+.prettierrc.json
+action.yml
+ARCHITECTURE.md
+Dockerfile
+entrypoint.sh
+LICENSE
+LOCAL_USAGE.md
+package.json
+README.md
+tsconfig.json
+
+================================================================
+Files
+================================================================
+
+================
+File: src/app/codeaudits-parse.app.ts
+================
+import { ICoreInterface } from '../interfaces/core.interface.js'
+import { RepositoryParser, RepositoryParseOptions } from '../services/repository-parser.service.js'
+
+export interface ActionOptions {
+  style: string
+  compress: boolean
+  outputFilePath: string
+  workingDirectory: string
+}
+
+/**
+ * Main application orchestrator
+ * Coordinates between repository parsing and CodeAudits submission
+ */
+export class CodeAuditsParseApp {
+  private repositoryParser: RepositoryParser
+
+  constructor(private core: ICoreInterface) {
+    this.repositoryParser = new RepositoryParser(core)
+  }
+
+  /**
+   * Extract options from core inputs
+   */
+  extractOptionsFromCore(): ActionOptions {
+    return {
+      style: this.core.getInput('style'),
+      compress: this.core.getBooleanInput('compress'),
+      outputFilePath: this.core.getInput('output') || 'parsed-repo.txt',
+      workingDirectory: this.core.getInput('working-directory'),
+    }
+  }
+
+  /**
+   * Main execution flow
+   */
+  async execute(options?: ActionOptions): Promise<void> {
+    try {
+      const actionOptions = options || this.extractOptionsFromCore()
+      
+      // Parse repository
+      const parseOptions: RepositoryParseOptions = {
+        style: actionOptions.style,
+        compress: actionOptions.compress,
+        outputFilePath: actionOptions.outputFilePath,
+        workingDirectory: actionOptions.workingDirectory
+      }
+
+      const parseResult = await this.repositoryParser.parseRepository(parseOptions)
+      this.repositoryParser.generateSummary(parseOptions, parseResult.packResult)
+      
+      await this.core.summary.write()
+    } catch (error) {
+      console.error(error)
+      if (error instanceof Error) {
+        this.core.setFailed(error.message)
+      }
+    }
+  }
+}
+
+================
+File: src/core/github-actions-core.ts
+================
+import * as core from '@actions/core'
+import { ICoreInterface, ISummary } from '../interfaces/core.interface.js'
+
+/**
+ * Adapter to make GitHub Actions core compatible with our interface
+ * This bridges the gap between the external library and our internal interface
+ */
+export class GitHubActionsCore implements ICoreInterface {
+  constructor(private coreImpl = core) {}
+
+  getInput(name: string): string {
+    return this.coreImpl.getInput(name)
+  }
+
+  getBooleanInput(name: string): boolean {
+    return this.coreImpl.getBooleanInput(name)
+  }
+
+  setOutput(name: string, value: string): void {
+    this.coreImpl.setOutput(name, value)
+  }
+
+  setFailed(message: string): void {
+    this.coreImpl.setFailed(message)
+  }
+
+  debug(message: string): void {
+    this.coreImpl.debug(message)
+  }
+
+  info(message: string): void {
+    this.coreImpl.info(message)
+  }
+
+  error(message: string): void {
+    this.coreImpl.error(message)
+  }
+
+  summary: ISummary = {
+    addHeading: (heading: string, level?: number) => {
+      this.coreImpl.summary.addHeading(heading, level)
+      return this.summary
+    },
+    addTable: (table: any) => {
+      this.coreImpl.summary.addTable(table)
+      return this.summary
+    },
+    addBreak: () => {
+      this.coreImpl.summary.addBreak()
+      return this.summary
+    },
+    addCodeBlock: (code: string, lang?: string) => {
+      this.coreImpl.summary.addCodeBlock(code, lang)
+      return this.summary
+    },
+    addLink: (text: string, url: string) => {
+      this.coreImpl.summary.addLink(text, url)
+      return this.summary
+    },
+    write: async () => {
+      await this.coreImpl.summary.write()
+    }
+  }
+}
+
+================
+File: src/core/local-core.ts
+================
+import { ICoreInterface, ISummary } from '../interfaces/core.interface.js'
+
+/**
+ * Local implementation of the core interface for non-GitHub Actions usage
+ * This mock allows the same codebase to run locally and in GitHub Actions
+ */
+export class LocalCore implements ICoreInterface {
+  private inputs: Record<string, string> = {}
+  private outputs: Record<string, string> = {}
+  
+  constructor(options: any = {}) {
+    this.inputs = {
+      'style': options.style || 'plain',
+      'compress': options.compress?.toString() || 'false',
+      'working-directory': options.workingDirectory || '.',
+      'output': options.output || 'parsed-repo.txt'
+    }
+  }
+
+  getInput(name: string): string {
+    return this.inputs[name] || ''
+  }
+
+  getBooleanInput(name: string): boolean {
+    const value = this.getInput(name)
+    return value === 'true' || value === '1'
+  }
+
+  setOutput(name: string, value: string): void {
+    this.outputs[name] = value
+    console.log(`Output: ${name} = ${value}`)
+  }
+
+  setFailed(message: string): void {
+    console.error(`Failed: ${message}`)
+    process.exit(1)
+  }
+
+  debug(message: string): void {
+    console.debug(`Debug: ${message}`)
+  }
+
+  info(message: string): void {
+    console.log(`Info: ${message}`)
+  }
+
+  error(message: string): void {
+    console.error(`Error: ${message}`)
+  }
+
+  summary: ISummary = {
+    addHeading: (heading: string, level?: number) => {
+      console.log(`${'#'.repeat(level || 1)} ${heading}`)
+      return this.summary
+    },
+    addTable: (table: any) => {
+      console.table(table)
+      return this.summary
+    },
+    addBreak: () => {
+      console.log('')
+      return this.summary
+    },
+    addCodeBlock: (code: string, lang?: string) => {
+      console.log(`\`\`\`${lang || ''}\n${code}\n\`\`\``)
+      return this.summary
+    },
+    addLink: (text: string, url: string) => {
+      console.log(`[${text}](${url})`)
+      return this.summary
+    },
+    write: async () => {
+      console.log('Summary written (local mode)')
+    }
+  }
+}
+
+================
+File: src/interfaces/core.interface.ts
+================
+/**
+ * Core interface for abstracting GitHub Actions core functionality
+ * This allows us to use the same code for both GitHub Actions and local execution
+ */
+export interface ICoreInterface {
+  getInput(name: string): string
+  getBooleanInput(name: string): boolean
+  setOutput(name: string, value: string): void
+  setFailed(message: string): void
+  debug(message: string): void
+  info(message: string): void
+  error(message: string): void
+  summary: ISummary
+}
+
+export interface ISummary {
+  addHeading(heading: string, level?: number): ISummary
+  addTable(table: any): ISummary
+  addBreak(): ISummary
+  addCodeBlock(code: string, lang?: string): ISummary
+  addLink(text: string, url: string): ISummary
+  write(): Promise<void>
+}
+
+================
+File: src/services/repository-parser.service.ts
+================
+import { CliOptions, runCli } from 'repomix'
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import { ICoreInterface } from '../interfaces/core.interface.js'
+
+export interface RepositoryParseOptions {
+  style: string
+  compress: boolean
+  outputFilePath: string
+  workingDirectory: string
+}
+
+export interface ParseResult {
+  packResult: any
+  outputPath: string
+  absoluteWorkingDirectory: string
+}
+
+/**
+ * Service for handling repository parsing operations
+ * Encapsulates the logic for parsing repositories using repomix
+ */
+export class RepositoryParser {
+  constructor(private core: ICoreInterface) {}
+
+  /**
+   * Parse a repository and generate output file
+   */
+  async parseRepository(options: RepositoryParseOptions): Promise<ParseResult> {
+    const { style, compress, outputFilePath, workingDirectory } = options
+
+    this.core.debug(
+      `Parsing codebase into ${outputFilePath} file, with style ${style} in directory ${workingDirectory}`
+    )
+
+    const absoluteWorkingDirectory = path.resolve(process.cwd(), workingDirectory)
+
+    const cliOptions: CliOptions = {
+      output: outputFilePath,
+      style: style as 'xml' | 'markdown' | 'plain',
+      fileSummary: true,
+      directoryStructure: true,
+      securityCheck: false,
+      topFilesLen: 10,
+      quiet: true,
+      compress: compress
+    }
+
+    const result = await runCli(['.'], absoluteWorkingDirectory, cliOptions)
+    if (!result) {
+      throw new Error('Repository could not be parsed')
+    }
+
+    const { packResult } = result
+
+    this.core.setOutput('parse-metadata', JSON.stringify(packResult))
+    this.core.setOutput('parsed-file-name', outputFilePath)
+
+    this.core.info(
+      `Parsing complete. Output written to ${outputFilePath}.\n
+      You can export it with actions/upload-artifact@v4.`
+    )
+
+    return {
+      packResult,
+      outputPath: outputFilePath,
+      absoluteWorkingDirectory
+    }
+  }
+
+  /**
+   * Generate parsing summary for display
+   */
+  generateSummary(options: RepositoryParseOptions, packResult: any): void {
+    const { style, compress, workingDirectory, outputFilePath } = options
+
+    this.core.summary
+      .addHeading('Code Parsing Summary')
+      .addTable([
+        ['Parsed output file', outputFilePath],
+        ['Style', style],
+        ['Compress', compress.toString()],
+        ['Working Directory', workingDirectory]
+      ])
+      .addBreak()
+      .addHeading('Parsed Metadata', 2)
+      .addCodeBlock(JSON.stringify(packResult, null, 2), 'json')
+  }
+
+  /**
+   * Read the parsed file content
+   */
+  async readParsedContent(absoluteWorkingDirectory: string, outputFilePath: string): Promise<string> {
+    return await fs.readFile(path.join(absoluteWorkingDirectory, outputFilePath), 'utf-8')
+  }
+}
+
+================
+File: src/local.ts
+================
+#!/usr/bin/env node
+
+/**
+ * Local CLI runner for codeaudits-parse
+ * This allows running the tool locally without GitHub Actions environment
+ */
+
+import { Command } from 'commander'
+import { runLocal } from './main.js'
+
+const program = new Command()
+
+program
+  .name('codeaudits-parse')
+  .description('Parse repository code')
+  .version('1.0.0')
+
+program
+  .option('-s, --style <style>', 'Output style', 'plain')
+  .option('-c, --compress', 'Enable compression', false)
+  .option('-w, --working-directory <dir>', 'Working directory', '.')
+  .option('-o, --output <file>', 'Output file name', 'parsed-repo.txt')
+  .action(async (options) => {
+    try {
+      await runLocal(options)
+    } catch (error) {
+      console.error('Error:', error)
+      process.exit(1)
+    }
+  })
+
+program.parse()
+
+================
+File: .gitattributes
+================
+* text=auto eol=lf
+
+================
+File: .gitignore
+================
+# Dependency directory
+node_modules
+
+# Rest pulled from https://github.com/github/gitignore/blob/master/Node.gitignore
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Diagnostic reports (https://nodejs.org/api/report.html)
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Directory for instrumented libs generated by jscoverage/JSCover
+lib-cov
+
+# Coverage directory used by tools like istanbul
+coverage
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
+.grunt
+
+# Bower dependency directory (https://bower.io/)
+bower_components
+
+# node-waf configuration
+.lock-wscript
+
+# Compiled binary addons (https://nodejs.org/api/addons.html)
+build/Release
+
+# Dependency directories
+jspm_packages/
+
+# TypeScript v1 declaration files
+typings/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env
+.env.test
+
+# parcel-bundler cache (https://parceljs.org/)
+.cache
+
+# next.js build output
+.next
+
+# nuxt.js build output
+.nuxt
+
+# vuepress build output
+.vuepress/dist
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Ignore built ts files
+__tests__/runner/*
+
+# IDE files
+.idea
+*.code-workspace
+
+dist/
+
+================
+File: .prettierrc.json
+================
+{
+  "printWidth": 80,
+  "tabWidth": 2,
+  "useTabs": false,
+  "semi": false,
+  "singleQuote": true,
+  "quoteProps": "as-needed",
+  "jsxSingleQuote": false,
+  "trailingComma": "none",
+  "bracketSpacing": true,
+  "bracketSameLine": true,
+  "arrowParens": "avoid",
+  "proseWrap": "always",
+  "htmlWhitespaceSensitivity": "css",
+  "endOfLine": "lf"
+}
+
+================
+File: ARCHITECTURE.md
+================
+# Code Architecture Documentation
+
+## Overview
+
+This codebase has been refactored to follow clean architecture principles with clear separation of concerns, improved maintainability, and scalability.
+
+## Structure
+
+```
+src/
+├── interfaces/           # Type definitions and contracts
+│   └── core.interface.ts # Core interface for GitHub Actions abstraction
+├── core/                 # Core implementations
+│   ├── github-actions-core.ts # GitHub Actions adapter
+│   └── local-core.ts     # Local development implementation
+├── services/             # Business logic services
+│   └── repository-parser.service.ts # Repository parsing logic
+├── app/                  # Application orchestration
+│   └── codeaudits-parse.app.ts # Main application coordinator
+├── main.ts              # Thin orchestration layer
+├── index.ts             # Entry point and exports
+├── local.ts             # CLI interface
+```
+
+## Key Components
+
+### 1. Interfaces (`interfaces/`)
+- **`ICoreInterface`**: Defines the contract for core functionality, enabling both GitHub Actions and local execution
+- **`ISummary`**: Defines the summary reporting interface
+
+### 2. Core Implementations (`core/`)
+- **`GitHubActionsCore`**: Adapter that wraps GitHub Actions core to match our interface
+- **`LocalCore`**: Mock implementation for local development and testing
+
+### 3. Services (`services/`)
+- **`RepositoryParser`**: Encapsulates all repository parsing logic
+  - Handles repomix integration
+  - Manages file operations
+  - Extracts metadata
+  - Generates summaries
+
+### 4. Application Layer (`app/`)
+- **`CodeAuditsParseApp`**: Main application orchestrator
+  - Coordinates between services
+  - Handles the main execution flow
+  - Manages error handling
+
+### 5. Entry Points
+- **`main.ts`**: Thin orchestration layer
+- **`index.ts`**: GitHub Actions entry point + library exports
+- **`local.ts`**: CLI interface for local usage
+
+## Benefits of This Architecture
+
+### 1. **Separation of Concerns**
+- Each class has a single responsibility
+- Business logic is separated from infrastructure concerns
+- Core abstractions allow for different execution environments
+
+### 2. **Testability**
+- Dependency injection through constructor parameters
+- Interface-based design allows for easy mocking
+- Services can be tested in isolation
+
+### 3. **Maintainability**
+- Clear boundaries between components
+- Easy to locate and modify specific functionality
+- Reduced coupling between modules
+
+### 4. **Scalability**
+- Easy to add new features without affecting existing code
+- Plugin-like architecture for different core implementations
+- Service layer can be extended with new parsers or processors
+
+### 5. **Reusability**
+- Components can be used independently
+- Clear API through interfaces
+- Easy to create different front-ends (CLI, web, etc.)
+
+## Usage Examples
+
+### GitHub Actions
+```typescript
+import { run } from './main.js'
+await run() // Uses GitHub Actions core automatically
+```
+
+### Local Development
+```typescript
+import { runLocal } from './main.js'
+await runLocal({
+  style: 'plain',
+  compress: false,
+  workingDirectory: '.',
+  // ... other options
+})
+```
+
+### Programmatic Usage
+```typescript
+import { CodeAuditsParseApp, LocalCore } from './index.js'
+
+const core = new LocalCore(options)
+const app = new CodeAuditsParseApp(core)
+await app.execute()
+```
+
+## Migration Notes
+
+The refactoring maintains backward compatibility:
+- All existing entry points (`run`, `runLocal`) work the same way
+- Same CLI interface in `local.ts`
+- Same GitHub Actions integration
+
+## Future Enhancements
+
+This architecture makes it easy to add:
+- Different output formats (new services)
+- Additional submission targets (new submission services)
+- Web interface (new core implementation)
+- Batch processing capabilities
+- Plugin system for custom parsers
+
+================
+File: Dockerfile
+================
+# Set the base image to use for subsequent instructions
+FROM node:23-alpine
+
+WORKDIR /codeaudits
+
+# Copy the action's code into the container
+COPY . .
+
+# Install dependencies and build the action
+RUN npm install
+RUN npm run build
+
+# Set the entrypoint for the action
+ENTRYPOINT ["/codeaudits/entrypoint.sh"]
+
+================
+File: entrypoint.sh
+================
+#!/bin/sh -l
+
+NODE_PATH=/codeauidts/dist node /codeaudits/dist/index.js
+
+================
+File: LICENSE
+================
+MIT License
+
+Copyright (c) 2025 CodeAudits.ai
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+================
+File: LOCAL_USAGE.md
+================
+# Local Usage
+
+You can now run the codeaudits-parse tool locally without requiring GitHub Actions environment.
+
+## Installation and Build
+
+```bash
+npm install
+npm run build
+```
+
+## Local Usage
+
+After building, you can run the tool locally using:
+
+```bash
+npm run local -- [options]
+```
+
+### Available Options
+
+- `-s, --style <style>`: Output style (default: 'plain')
+- `-c, --compress`: Enable compression
+- `-w, --working-directory <dir>`: Working directory (default: '.')
+- `-o, --output <file>`: Output file name (default: 'parsed-repo.txt')
+- `--push-to-codeaudits`: Submit to CodeAudits
+- `--codeaudits-api-key <key>`: CodeAudits API key
+- `--codeaudits-base-path <path>`: CodeAudits base path
+
+### Examples
+
+1. **Basic usage** - Parse current directory:
+```bash
+npm run local
+```
+
+2. **Parse with specific style and compression**:
+```bash
+npm run local -- --style xml --compress
+```
+
+3. **Parse specific directory with custom output**:
+```bash
+npm run local -- --working-directory ./src --output my-repo.txt
+```
+
+4. **Parse and submit to CodeAudits**:
+```bash
+npm run local -- --push-to-codeaudits --codeaudits-api-key YOUR_API_KEY --codeaudits-base-path https://your-codeaudits-instance.com/
+```
+
+## Development
+
+For development with auto-reload:
+
+```bash
+npm run dev
+```
+
+This will watch for file changes and restart the application automatically.
+
+================
+File: tsconfig.json
+================
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*"]
+}
+
+================
+File: .github/workflows/llm_audit_external_with_action.yml
+================
+name: Push external codebase for LLM audits (public)
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo_url:
+        description: 'Repo URL for audit'
+        default: 'https://github.com/frogermcs/codebase-dump'
+        required: true
+        type: string
+
+jobs:
+  test-action:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract repo name from URL
+        id: extract_repo_name
+        run: |
+          REPO_URL="${{ github.event.inputs.repo_url }}"
+          REPO_NAME=$(basename "$REPO_URL" .git)
+          echo "repo_name=$REPO_NAME" >> $GITHUB_OUTPUT
+
+      - name: Clone target repository with gh
+        run: gh repo clone ${{ github.event.inputs.repo_url }} ${{ steps.extract_repo_name.outputs.repo_name }} -- --depth 1
+        env:
+          GH_TOKEN: ${{ secrets.GH_CLONE_PRIV_REPOS }}
+
+      - name: Parse Repository
+        uses: frogermcs/codeaudits-parse@v1.1.0
+        with:
+          style: markdown
+          compress: true
+          push-to-codeaudits: false
+          working-directory: ${{ steps.extract_repo_name.outputs.repo_name }}
+
+      - name: Upload parsed file as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: parsed-repo
+          path: ${{ steps.extract_repo_name.outputs.repo_name }}/parsed-repo.txt
+
+================
+File: .github/workflows/llm_audit_external.yml
+================
+name: TEST - CodeAudits Action with Working Directory
+
+on:
+  workflow_dispatch:
+    inputs:
+      repo_url:
+        description: 'Repo URL for audit'
+        default: 'https://github.com/frogermcs/codebase-dump'
+        required: true
+        type: string
+
+jobs:
+  test-action:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract repo name from URL
+        id: extract_repo_name
+        run: |
+          REPO_URL="${{ github.event.inputs.repo_url }}"
+          REPO_NAME=$(basename "$REPO_URL" .git)
+          echo "repo_name=$REPO_NAME" >> $GITHUB_OUTPUT
+
+      - name: Clone target repository with gh
+        run: gh repo clone ${{ github.event.inputs.repo_url }} ${{ steps.extract_repo_name.outputs.repo_name }} -- --depth 1
+        env:
+          GH_TOKEN: ${{ secrets.GH_CLONE_PRIV_REPOS }}
+
+      - name: Run CodeAudits Action
+        uses: ./  # Assuming your action is in the root of the repository
+        with:
+          style: markdown
+          compress: true
+          push-to-codeaudits: false
+          working-directory: ${{ steps.extract_repo_name.outputs.repo_name }} # Set the working directory
+
+      - name: Upload parsed file as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: parsed-repo
+          path: parsed-repo.txt
+
+================
+File: .github/workflows/llm_audit_public.yml
+================
+name: TEST - Push codebase for LLM audits (public)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  parse-repository:
+    runs-on: ubuntu-latest
+    name: Parse this repository for CodeAudits
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Parse Repository
+        uses: ./
+        id: parse
+        with:
+          style: markdown
+          compress: false
+          push-to-codeaudits: true
+      
+      - name: Upload Prompt File as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: parsed-repo.txt
+          path: parsed-repo.txt
+
+================
+File: src/index.ts
+================
+/**
+ * The entrypoint for the action. This file simply imports and runs the action's
+ * main logic.
+ */
+import { run } from './main.js'
+
+/* istanbul ignore next */
+run()
+
+// Main exports for the codeaudits-parse library
+export { run, runLocal } from './main.js'
+export { CodeAuditsParseApp } from './app/codeaudits-parse.app.js'
+export { RepositoryParser } from './services/repository-parser.service.js'
+export { LocalCore } from './core/local-core.js'
+export { GitHubActionsCore } from './core/github-actions-core.js'
+export type { ICoreInterface, ISummary } from './interfaces/core.interface.js'
+export type { ActionOptions } from './app/codeaudits-parse.app.js'
+export type { RepositoryParseOptions, ParseResult } from './services/repository-parser.service.js'
+
+================
+File: package.json
+================
+{
+  "name": "codeaudits-action-docker",
+  "version": "1.0.0",
+  "description": "[![GitHub Super-Linter](https://github.com/actions/hello-world-docker-action/actions/workflows/linter.yml/badge.svg)](https://github.com/super-linter/super-linter) ![CI](https://github.com/actions/hello-world-docker-action/actions/workflows/ci.yml/badge.svg)",
+  "main": "index.js",
+  "scripts": {
+    "start": "NODE_PATH=./dist node dist/index.js",
+    "build": "tsc -p .",
+    "dev": "nodemon src/index.ts",
+    "local": "NODE_PATH=./dist node dist/local.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@actions/core": "^1.11.1",
+    "axios": "^1.8.3",
+    "commander": "^14.0.0",
+    "repomix": "^0.3.00"
+  },
+  "devDependencies": {
+    "@types/commander": "^2.12.0",
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2"
+  }
+}
+
+================
+File: .github/workflows/llm_audit_with_action.yml
+================
+name: Push codebase for LLM audits (public)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  parse-repository:
+    runs-on: ubuntu-latest
+    name: Parse this repository for CodeAudits
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Parse Repository
+        uses: frogermcs/codeaudits-parse@v1.1.0
+        id: parse
+        with:
+          style: markdown
+          compress: false
+          push-to-codeaudits: true
+      
+      - name: Upload Prompt File as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: parsed-repo.txt
+          path: parsed-repo.txt
+
+================
+File: action.yml
+================
+name: CodeAudits-Action
+description: Github Action to parse your source code
+author: Miroslaw Stanek
+
+branding:
+  icon: compass
+  color: gray-dark
+
+inputs:
+  style:
+    description: Parsed document style. Use 'markdown', 'xml' or 'plain'
+    default: 'markdown'
+  compress:
+    description: Run intelligent code parsing to reduce tokens
+    default: 'false'
+  working-directory:
+    description: The directory in which to run the action. Defaults to the repository root.
+    default: '.'
+    required: false
+
+# Define your outputs here.
+outputs:
+  parse-metadata:
+    description: Metadata of the parsed repository
+  parsed-file-name:
+    description: Name of the parsed output file
+  submission-status:
+    description: Result of the submission to CodeAudits
+
+runs:
+  using: docker
+  image: Dockerfile
+
+================
+File: README.md
+================
+# CodeAudits Action
+
+[![CI](https://github.com/actions/hello-world-docker-action/actions/workflows/ci.yml/badge.svg)](https://github.com/actions/hello-world-docker-action/actions/workflows/ci.yml)
+
+A GitHub Action that parses your repository's code and submits it to [CodeAudits.ai](https://codeaudits.ai/) for analysis.
+
+Here's [CodeAudits documentation](https://codeaudits.ai/docs/howto) about how to use this GH Action.
+
+## Overview
+
+This action uses the [Repomix](https://github.com/yamadashy/repomix) library to generate a comprehensive text representation of your codebase and optionally submits it to CodeAudits.ai. This allows you to:
+
+- Create a single document containing your entire codebase in a readable format
+- Analyze your code structure and organization
+- Submit your code for automated auditing and analysis through CodeAudits.ai
+
+## Usage
+
+Add the following to your GitHub Actions workflow file:
+
+```yaml
+name: CodeAudits Analysis
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  # Or use workflow_dispatch to trigger manually
+  workflow_dispatch:
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    name: Analyze code with CodeAudits
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for thorough analysis
+      
+      - name: Parse and submit repository
+        uses: codeaudits/codeaudits-action@v1
+        id: audit
+        with:
+          style: markdown            # Format of the parsed output
+          compress: true             # Enable intelligent code parsing to reduce tokens
+          push-to-codeaudits: true   # Submit to CodeAudits.ai
+          codeaudits-api-key: ${{ secrets.CODEAUDITS_API_KEY }}  # Optional: For private accounts
+      
+      - name: Upload parsed file as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: codebase-analysis
+          path: parsed-repo.txt
+```
+
+## Inputs
+
+| Input | Description | Default | Required |
+|-------|-------------|---------|----------|
+| `style` | Parsed document style. Use 'markdown', 'xml' or 'plain' | `markdown` | No |
+| `compress` | Run intelligent code parsing to reduce tokens | `false` | No |
+| `push-to-codeaudits` | Whether to upload parsed repo to CodeAudits.ai | `true` | No |
+| `codeaudits-base-path` | Base URL for the CodeAudits API | `https://codeaudits.ai/` | No |
+| `codeaudits-api-key` | CodeAudits API key for assignment to your private account | - | No |
+
+## Outputs
+
+| Output | Description |
+|--------|-------------|
+| `parse-metadata` | Metadata of the parsed repository |
+| `parsed-file-name` | Name of the parsed output file |
+| `submission-status` | Result of the submission to CodeAudits |
+
+## Examples
+
+### Basic Analysis
+
+```yaml
+- name: Run CodeAudits Analysis
+  uses: codeaudits/codeaudits-action@v1
+  with:
+    style: markdown
+    push-to-codeaudits: true
+```
+
+### Parse Only (without submission)
+
+```yaml
+- name: Parse Repository Without Submitting
+  uses: codeaudits/codeaudits-action@v1
+  with:
+    style: markdown
+    push-to-codeaudits: false
+```
+
+### With Custom API Key
+
+```yaml
+- name: Run CodeAudits Analysis with API Key
+  uses: codeaudits/codeaudits-action@v1
+  with:
+    style: markdown
+    push-to-codeaudits: true
+    codeaudits-api-key: ${{ secrets.CODEAUDITS_API_KEY }}
+```
+
+## Viewing Results
+
+After the action completes:
+
+1. The parsed repository will be available as a GitHub Actions artifact named `parsed-repo.txt`
+2. If submission to CodeAudits was enabled, a link to the analysis will be provided in the workflow run summary
+3. Detailed metadata about the parsing process will be available in the job outputs
+
+## Privacy and Security
+
+When using this action with `push-to-codeaudits: true`, your code will be sent to CodeAudits.ai for analysis. If you have concerns about sensitive code, you can:
+
+- Use `push-to-codeaudits: false` to only generate the parsed file without submitting it
+- Create a `.repomixignore` file to exclude sensitive files from parsing
+- Use a private instance of CodeAudits with the `codeaudits-base-path` option
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+================
+File: src/main.ts
+================
+import * as core from '@actions/core'
+import { CodeAuditsParseApp } from './app/codeaudits-parse.app.js'
+import { LocalCore } from './core/local-core.js'
+import { GitHubActionsCore } from './core/github-actions-core.js'
+
+/**
+ * The main function for the action.
+ * This is now a thin orchestration layer that delegates to the main app.
+ *
+ * @returns Resolves when the action is complete.
+ */
+export async function run(coreImpl: any = core): Promise<void> {
+  const adaptedCore = new GitHubActionsCore(coreImpl)
+  const app = new CodeAuditsParseApp(adaptedCore)
+  await app.execute()
+}
+
+/**
+ * Local runner function for running without GitHub Actions
+ * Creates a LocalCore instance and runs the main app
+ */
+export async function runLocal(options: any): Promise<void> {
+  const localCore = new LocalCore(options)
+  const app = new CodeAuditsParseApp(localCore)
+  await app.execute()
+}
+
+
+
+================================================================
+End of Codebase
+================================================================

@@ -20,7 +20,6 @@ src/
 ├── main.ts              # Thin orchestration layer
 ├── index.ts             # Entry point and exports
 ├── local.ts             # CLI interface
-└── codeaudits-submission.ts # External API integration
 ```
 
 ## Key Components
@@ -45,10 +44,9 @@ src/
   - Coordinates between services
   - Handles the main execution flow
   - Manages error handling
-  - Orchestrates CodeAudits submission
 
 ### 5. Entry Points
-- **`main.ts`**: Thin orchestration layer - now just 20 lines!
+- **`main.ts`**: Thin orchestration layer
 - **`index.ts`**: GitHub Actions entry point + library exports
 - **`local.ts`**: CLI interface for local usage
 
