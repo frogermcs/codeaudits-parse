@@ -1,6 +1,6 @@
 {
   "name": "codeaudits-action-docker",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "[![GitHub Super-Linter](https://github.com/actions/hello-world-docker-action/actions/workflows/linter.yml/badge.svg)](https://github.com/super-linter/super-linter) ![CI](https://github.com/actions/hello-world-docker-action/actions/workflows/ci.yml/badge.svg)",
   "main": "index.js",
   "scripts": {
