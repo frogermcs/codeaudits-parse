@@ -1,5 +1,5 @@
-import * as core from '@actions/core'
 import axios from 'axios'
+import { ICoreInterface } from './interfaces/core.interface.js'
 
 /**
  * Submit parsed repository to CodeAudits.ai
@@ -8,8 +8,8 @@ export async function submitToCodeAudits(
   content: string,
   metadata: { [key: string]: string | number | Record<string, number> },
   basePath: string,
-  apiKey?: string,
-  coreImpl: any = core
+  apiKey: string | undefined,
+  coreImpl: ICoreInterface
 ): Promise<void> {
   const headers: { [key: string]: string } = {
     'Content-Type': 'application/json',
