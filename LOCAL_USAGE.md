@@ -23,9 +23,6 @@ npm run local -- [options]
 - `-c, --compress`: Enable compression
 - `-w, --working-directory <dir>`: Working directory (default: '.')
 - `-o, --output <file>`: Output file name (default: 'parsed-repo.txt')
-- `--push-to-codeaudits`: Submit to CodeAudits
-- `--codeaudits-api-key <key>`: CodeAudits API key
-- `--codeaudits-base-path <path>`: CodeAudits base path
 
 ### Examples
 
@@ -42,11 +39,6 @@ npm run local -- --style xml --compress
 3. **Parse specific directory with custom output**:
 ```bash
 npm run local -- --working-directory ./src --output my-repo.txt
-```
-
-4. **Parse and submit to CodeAudits**:
-```bash
-npm run local -- --push-to-codeaudits --codeaudits-api-key YOUR_API_KEY --codeaudits-base-path https://your-codeaudits-instance.com/
 ```
 
 ## Development

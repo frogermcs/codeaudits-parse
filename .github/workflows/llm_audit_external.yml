@@ -1,4 +1,4 @@
-name: TEST - CodeAudits Action with Working Directory
+name: TEST - External codebase - parse for LLM
 
 on:
   workflow_dispatch:
@@ -35,7 +35,6 @@ jobs:
         with:
           style: markdown
           compress: true
-          push-to-codeaudits: false
           working-directory: ${{ steps.extract_repo_name.outputs.repo_name }} # Set the working directory
 
       - name: Upload parsed file as artifact

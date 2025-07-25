@@ -1,4 +1,4 @@
-name: Push codebase for LLM audits (public)
+name: This codebase - parse for LLM
 
 on:
   workflow_dispatch:
@@ -17,7 +17,6 @@ jobs:
         with:
           style: markdown
           compress: false
-          push-to-codeaudits: true
       
       - name: Upload Prompt File as Artifact
         uses: actions/upload-artifact@v4
