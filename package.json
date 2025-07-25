@@ -4,18 +4,21 @@
   "description": "[![GitHub Super-Linter](https://github.com/actions/hello-world-docker-action/actions/workflows/linter.yml/badge.svg)](https://github.com/super-linter/super-linter) ![CI](https://github.com/actions/hello-world-docker-action/actions/workflows/ci.yml/badge.svg)",
   "main": "index.js",
   "scripts": {
-      "start": "NODE_PATH=./dist node dist/index.js",
-      "build": "tsc -p .",
-      "dev": "nodemon src/index.ts"
+    "start": "NODE_PATH=./dist node dist/index.js",
+    "build": "tsc -p .",
+    "dev": "nodemon src/index.ts",
+    "local": "NODE_PATH=./dist node dist/local.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@actions/core": "^1.11.1",
     "axios": "^1.8.3",
+    "commander": "^14.0.0",
     "repomix": "^0.3.00"
   },
   "devDependencies": {
+    "@types/commander": "^2.12.0",
     "@types/node": "^22.13.10",
     "typescript": "^5.8.2"
   }

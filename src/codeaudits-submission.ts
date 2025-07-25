@@ -1,13 +1,15 @@
 import * as core from '@actions/core'
 import axios from 'axios'
+
 /**
- * Submit parsed repositoiry to CodeAudits.ai
+ * Submit parsed repository to CodeAudits.ai
  */
 export async function submitToCodeAudits(
   content: string,
   metadata: { [key: string]: string | number | Record<string, number> },
   basePath: string,
-  apiKey?: string
+  apiKey?: string,
+  coreImpl: any = core
 ): Promise<void> {
   const headers: { [key: string]: string } = {
     'Content-Type': 'application/json',
@@ -23,32 +25,32 @@ export async function submitToCodeAudits(
 
   const futurePayload = {
     content: "content goes here",
-    repository: process.env.GITHUB_REPOSITORY,
+    repository: process.env.GITHUB_REPOSITORY || 'local-repository',
     metadata: metadata
   }
 
-  core.info("Preview of the future payload:")
-  core.info(JSON.stringify(futurePayload, null, 2))
+  coreImpl.info("Preview of the future payload:")
+  coreImpl.info(JSON.stringify(futurePayload, null, 2))
 
   const submission = await axios
     .post(`${basePath}api/repo/add`, payload, {
       headers
     })
     .catch(error => {
-      core.error('Failed to push code to CodeAudits')
-      core.error(JSON.stringify(error.response.data, null, 2))
-      core.setFailed('Failed to push code to CodeAudits')
+      coreImpl.error('Failed to push code to CodeAudits')
+      coreImpl.error(JSON.stringify(error.response?.data || error.message, null, 2))
+      coreImpl.setFailed('Failed to push code to CodeAudits')
     })
 
   if (submission) {
-    core.info('Code pushed to CodeAudits')
-    core.debug(JSON.stringify(submission.data, null, 2))
-    core.setOutput('submission-status', JSON.stringify(submission.data))
+    coreImpl.info('Code pushed to CodeAudits')
+    coreImpl.debug(JSON.stringify(submission.data, null, 2))
+    coreImpl.setOutput('submission-status', JSON.stringify(submission.data))
 
-    core.summary.addHeading('Code Submission Summary', 2)
-    core.summary.addCodeBlock(JSON.stringify(submission.data, null, 2), 'json')
+    coreImpl.summary.addHeading('Code Submission Summary', 2)
+    coreImpl.summary.addCodeBlock(JSON.stringify(submission.data, null, 2), 'json')
     if (submission.data.url) {
-      core.summary.addLink('CodeAudits URL', submission.data.url)
+      coreImpl.summary.addLink('CodeAudits URL', submission.data.url)
     }
   }
 }

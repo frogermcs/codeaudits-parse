@@ -4,20 +4,80 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { submitToCodeAudits } from './codeaudits-submission.js'
 
+// Mock implementation for local usage
+class LocalCore {
+  private inputs: Record<string, string> = {}
+  private outputs: Record<string, string> = {}
+  
+  constructor(options: any = {}) {
+    this.inputs = {
+      'style': options.style || 'plain',
+      'compress': options.compress?.toString() || 'false',
+      'push-to-codeaudits': options.pushToCodeaudits?.toString() || 'false',
+      'working-directory': options.workingDirectory || '.',
+      'codeaudits-api-key': options.codeauditsApiKey || '',
+      'codeaudits-base-path': options.codeauditsBasePath || '',
+      'output': options.output || 'parsed-repo.txt'
+    }
+  }
+
+  getInput(name: string): string {
+    return this.inputs[name] || ''
+  }
+
+  getBooleanInput(name: string): boolean {
+    const value = this.getInput(name)
+    return value === 'true' || value === '1'
+  }
+
+  setOutput(name: string, value: string): void {
+    this.outputs[name] = value
+    console.log(`Output: ${name} = ${value}`)
+  }
+
+  setFailed(message: string): void {
+    console.error(`Failed: ${message}`)
+    process.exit(1)
+  }
+
+  debug(message: string): void {
+    console.debug(`Debug: ${message}`)
+  }
+
+  info(message: string): void {
+    console.log(`Info: ${message}`)
+  }
+
+  error(message: string): void {
+    console.error(`Error: ${message}`)
+  }
+
+  summary = {
+    addHeading: (heading: string) => this.summary,
+    addTable: (table: any) => this.summary,
+    addBreak: () => this.summary,
+    addCodeBlock: (code: string, lang: string) => this.summary,
+    addLink: (text: string, url: string) => this.summary,
+    write: async () => {
+      console.log('Summary written (local mode)')
+    }
+  }
+}
+
 /**
  * The main function for the action.
  *
  * @returns Resolves when the action is complete.
  */
-export async function run(): Promise<void> {
+export async function run(coreImpl: any = core): Promise<void> {
   try {
-    const style: string = core.getInput('style')
-    const compress: boolean = core.getBooleanInput('compress')
-    const pushToCodeaudits: boolean = core.getBooleanInput('push-to-codeaudits')
-    const outputFilePath = `parsed-repo.txt`
-    const workingDirectory: string = core.getInput('working-directory')
+    const style: string = coreImpl.getInput('style')
+    const compress: boolean = coreImpl.getBooleanInput('compress')
+    const pushToCodeaudits: boolean = coreImpl.getBooleanInput('push-to-codeaudits')
+    const outputFilePath = coreImpl.getInput('output') || `parsed-repo.txt`
+    const workingDirectory: string = coreImpl.getInput('working-directory')
 
-    core.debug(
+    coreImpl.debug(
       `Parsing codebase into ${outputFilePath} file, with style ${style} in directory ${workingDirectory}`
     )
 
@@ -36,21 +96,21 @@ export async function run(): Promise<void> {
 
     const result = await runCli(['.'], absoluteWorkingDirectory, cliOptions)
     if (!result) {
-      core.setFailed('Repository could not be parsed')
+      coreImpl.setFailed('Repository could not be parsed')
       return
     }
 
     const { packResult } = result
 
-    core.setOutput('parse-metadata', JSON.stringify(packResult))
-    core.setOutput('parsed-file-name', outputFilePath)
+    coreImpl.setOutput('parse-metadata', JSON.stringify(packResult))
+    coreImpl.setOutput('parsed-file-name', outputFilePath)
 
-    core.info(
+    coreImpl.info(
       `Parsing complete. Output written to ${outputFilePath}.\n
       You can export it with actions/upload-artifact@v4.`
     )
 
-    core.summary
+    coreImpl.summary
       .addHeading('Code Parsing Summary')
       .addTable([
         ['Parsed output file', outputFilePath],
@@ -63,9 +123,9 @@ export async function run(): Promise<void> {
       .addCodeBlock(JSON.stringify(packResult, null, 2), 'json')
 
     if (pushToCodeaudits) {
-      core.info('Submitting to CodeAudits')
-      const apiKey = core.getInput('codeaudits-api-key')
-      const basePath = core.getInput('codeaudits-base-path')
+      coreImpl.info('Submitting to CodeAudits')
+      const apiKey = coreImpl.getInput('codeaudits-api-key')
+      const basePath = coreImpl.getInput('codeaudits-base-path')
       const content = await fs.readFile(path.join(absoluteWorkingDirectory, outputFilePath), 'utf-8')
       
       const topFiles = 
@@ -83,16 +143,24 @@ export async function run(): Promise<void> {
         totalTokens: packResult.totalTokens,
         topFiles: topFilesResp
       }
-      await submitToCodeAudits(content, metadata, basePath, apiKey)
-      core.info('Submitted')
+      await submitToCodeAudits(content, metadata, basePath, apiKey, coreImpl)
+      coreImpl.info('Submitted')
     } else {
-      core.debug('Code will not be pushed to CodeAudits')
+      coreImpl.debug('Code will not be pushed to CodeAudits')
     }
     
-    await core.summary.write()
+    await coreImpl.summary.write()
   } catch (error) {
     // Fail the workflow run if an error occurs
     console.error(error)
-    if (error instanceof Error) core.setFailed(error.message)
+    if (error instanceof Error) coreImpl.setFailed(error.message)
   }
+}
+
+/**
+ * Local runner function for running without GitHub Actions
+ */
+export async function runLocal(options: any): Promise<void> {
+  const localCore = new LocalCore(options)
+  await run(localCore)
 }
