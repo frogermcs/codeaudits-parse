@@ -4,6 +4,13 @@
 
 This codebase has been refactored to follow clean architecture principles with clear separation of concerns, improved maintainability, and scalability.
 
+## Dependencies
+
+The project relies on the following key external libraries:
+- **@actions/core**: GitHub Actions toolkit for core functionality
+- **commander**: Command-line interface framework for local CLI usage
+- **repomix**: Library for generating comprehensive text representations of codebases
+
 ## Structure
 
 ```
@@ -27,6 +34,9 @@ src/
 ### 1. Interfaces (`interfaces/`)
 - **`ICoreInterface`**: Defines the contract for core functionality, enabling both GitHub Actions and local execution
 - **`ISummary`**: Defines the summary reporting interface
+- **`ActionOptions`**: Defines options for action execution (style, compress, output path, working directory)
+- **`RepositoryParseOptions`**: Defines options specific to repository parsing
+- **`ParseResult`**: Defines the structure of parsing results
 
 ### 2. Core Implementations (`core/`)
 - **`GitHubActionsCore`**: Adapter that wraps GitHub Actions core to match our interface
@@ -46,9 +56,9 @@ src/
   - Manages error handling
 
 ### 5. Entry Points
-- **`main.ts`**: Thin orchestration layer
-- **`index.ts`**: GitHub Actions entry point + library exports
-- **`local.ts`**: CLI interface for local usage
+- **`main.ts`**: Thin orchestration layer with `run()` and `runLocal()` functions
+- **`index.ts`**: GitHub Actions entry point + library exports (includes all public interfaces and classes)
+- **`local.ts`**: CLI interface for local usage with Commander.js integration
 
 ## Benefits of This Architecture
 
@@ -92,8 +102,23 @@ await runLocal({
   style: 'plain',
   compress: false,
   workingDirectory: '.',
-  // ... other options
+  outputFilePath: 'parsed-repo.txt'
 })
+```
+
+### CLI Usage
+```bash
+# Basic usage
+node dist/local.js
+
+# With options
+node dist/local.js --style markdown --compress --output my-repo.md --working-directory ./src
+
+# Available CLI options:
+# -s, --style <style>           Output style (default: "plain")
+# -c, --compress               Enable compression (default: false)
+# -w, --working-directory <dir> Working directory (default: ".")
+# -o, --output <file>          Output file name (default: "parsed-repo.txt")
 ```
 
 ### Programmatic Usage
@@ -105,12 +130,25 @@ const app = new CodeAuditsParseApp(core)
 await app.execute()
 ```
 
+### Available Exports
+The library exports the following for programmatic use:
+- **Functions**: `run`, `runLocal`
+- **Classes**: `CodeAuditsParseApp`, `RepositoryParser`, `LocalCore`, `GitHubActionsCore`
+- **Interfaces**: `ICoreInterface`, `ISummary`, `ActionOptions`, `RepositoryParseOptions`, `ParseResult`
+
 ## Migration Notes
 
 The refactoring maintains backward compatibility:
 - All existing entry points (`run`, `runLocal`) work the same way
-- Same CLI interface in `local.ts`
+- Same CLI interface in `local.ts` with Commander.js integration
 - Same GitHub Actions integration
+- Complete type safety with TypeScript interfaces
+
+## Project Information
+
+- **Name**: codeaudits-parse
+- **Version**: 1.2.0
+- **Repository**: frogermcs/codeaudits-parse
 
 ## Future Enhancements
 
@@ -120,3 +158,5 @@ This architecture makes it easy to add:
 - Web interface (new core implementation)
 - Batch processing capabilities
 - Plugin system for custom parsers
+- Enhanced CLI features and interactive modes
+- Integration with other code analysis tools
