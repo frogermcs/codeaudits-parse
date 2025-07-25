@@ -74,7 +74,6 @@ export class RepositoryParser {
     const { style, compress, workingDirectory, outputFilePath } = options
 
     const parseMetadata = {
-        'fileCharCounts' : packResult.fileCharCounts,
         'totalFiles' : packResult.totalFiles,
         'totalTokens': packResult.totalTokens,
         'suspiciousFilesResults': packResult.suspiciousFilesResults,
