@@ -5,8 +5,12 @@
  * This allows running the tool locally without GitHub Actions environment
  */
 
+import dotenv from 'dotenv'
 import { Command } from 'commander'
 import { runLocal } from './main.js'
+
+// Load environment variables from .env file
+dotenv.config()
 
 const program = new Command()
 
@@ -20,6 +24,8 @@ program
   .option('-c, --compress', 'Enable compression', false)
   .option('-w, --working-directory <dir>', 'Working directory', '.')
   .option('-o, --output <file>', 'Output file name', 'parsed-repo.txt')
+  .option('-i, --instruction <name>', 'Name of the instruction file for Gemini prompt')
+  .option('--gemini-api-key <key>', 'Gemini API key, can also be set as GEMINI_API_KEY env var')
   .action(async (options) => {
     try {
       await runLocal(options)
