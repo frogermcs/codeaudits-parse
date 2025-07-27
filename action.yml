@@ -17,6 +17,12 @@ inputs:
     description: The directory in which to run the action. Defaults to the repository root.
     default: '.'
     required: false
+  llm-instruction:
+    description: 'The name of the instruction file for the Gemini prompt (e.g., architecture-refactoring).'
+    required: false
+  gemini-api-key:
+    description: 'The API key for the Gemini API.'
+    required: false
 
 # Define your outputs here.
 outputs:
