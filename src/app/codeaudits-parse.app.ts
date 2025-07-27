@@ -40,41 +40,55 @@ export class CodeAuditsParseApp {
    * Main execution flow
    */
   async execute(options?: ActionOptions): Promise<void> {
-    try {
-      const actionOptions = options || this.extractOptionsFromCore()
+    const myMarkdown = `## My Header
+
+---
+Some stuff here :green_circle: With a [link](https://github.com)
+
+### Maybe Add A table
+
+| Header1 | Header2 | Header3 |
+|--- |--- | --- |
+| value1 | value2 | value |
+`
+
+    await this.core.summary.addRaw(myMarkdown).write()
+
+    // try {
+    //   const actionOptions = options || this.extractOptionsFromCore()
       
-      // Parse repository
-      const parseOptions: RepositoryParseOptions = {
-        style: actionOptions.style,
-        compress: actionOptions.compress,
-        outputFilePath: actionOptions.outputFilePath,
-        workingDirectory: actionOptions.workingDirectory
-      }
+    //   // Parse repository
+    //   const parseOptions: RepositoryParseOptions = {
+    //     style: actionOptions.style,
+    //     compress: actionOptions.compress,
+    //     outputFilePath: actionOptions.outputFilePath,
+    //     workingDirectory: actionOptions.workingDirectory
+    //   }
 
-      const parseResult = await this.repositoryParser.parseRepository(parseOptions)
-      this.repositoryParser.generateSummary(parseOptions, parseResult.packResult)
+    //   const parseResult = await this.repositoryParser.parseRepository(parseOptions)
+    //   this.repositoryParser.generateSummary(parseOptions, parseResult.packResult)
       
-      // Step 2: Conditionally submit to Gemini (new)
-      if (actionOptions.instruction) {
-        const parsedContent = await this.repositoryParser.readParsedContent(
-          parseResult.absoluteWorkingDirectory,
-          parseResult.outputPath
-        );
+    //   // Step 2: Conditionally submit to Gemini (new)
+    //   if (actionOptions.instruction) {
+    //     const parsedContent = await this.repositoryParser.readParsedContent(
+    //       parseResult.absoluteWorkingDirectory,
+    //       parseResult.outputPath
+    //     );
 
-        await this.geminiService.submit(
-          parsedContent,
-          actionOptions.instruction
-        );
-      } else {
-        this.core.info('No LLM instruction provided, skipping Gemini submission.');
-      }
+    //     await this.geminiService.submit(
+    //       parsedContent,
+    //       actionOptions.instruction
+    //     );
+    //   } else {
+    //     this.core.info('No LLM instruction provided, skipping Gemini submission.');
+    //   }
 
-      await this.core.summary.write()
-    } catch (error) {
-      console.error(error)
-      if (error instanceof Error) {
-        this.core.setFailed(error.message)
-      }
-    }
+    //   await this.core.summary.write()
+    // } catch (error) {
+    //   console.error(error)
+    //   if (error instanceof Error) {
+    //     this.core.setFailed(error.message)
+    //   }
+    // }
   }
 }
