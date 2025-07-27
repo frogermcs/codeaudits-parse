@@ -34,7 +34,8 @@ export class GeminiSubmissionService {
       "You will receive entire codebase and a specific audit request (e.g., refactoring for a desired architectural pattern, SOLID adherence, complexity reduction, etc.). " +
       "Focus on the given code and user request. Keep explanations concise but thorough. Avoid including unrelated or speculative information. " +
       "The ideal response should focus on making the next actionable steps to improve the codebase and meet prompt requirements. " +
-      "The response should come in markdown format as the primary output is Github Actions summary page. ";
+      "The response should come in markdown format as the primary output is Github Actions summary page. " + 
+      "Do not use conversational phrases such as 'Okay,' 'Sure,' or 'Let me.' Start directly with the analysis, plan, or output. "
 
       // 4. Send to Gemini and get response
       const response = await ai.models.generateContent({
