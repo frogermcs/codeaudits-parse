@@ -42,6 +42,8 @@ export class GeminiSubmissionService {
       // 5. Add response to the job summary
       this.core.summary
         .addHeading(`Gemini Analysis Results (${instructionName})`, 2)
+        .addRaw('Some content here :speech_balloon:')
+        .addBreak()
         .addRaw(response.text ?? 'no response from AI provided')
         .addCodeBlock(response.text ?? 'no response from AI provided', 'markdown');
 
