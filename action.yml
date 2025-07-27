@@ -20,6 +20,9 @@ inputs:
   llm-instruction:
     description: 'The name of the instruction file for the Gemini prompt (e.g., architecture-refactoring).'
     required: false
+  gemini-api-key:
+    description: 'Gemini API key for AI-powered code analysis'
+    required: false
 
 # Define your outputs here.
 outputs:
@@ -33,3 +36,5 @@ outputs:
 runs:
   using: docker
   image: Dockerfile
+  env:
+    GEMINI_API_KEY: ${{ inputs.gemini-api-key }}

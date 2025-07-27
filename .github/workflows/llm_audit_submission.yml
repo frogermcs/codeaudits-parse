@@ -18,6 +18,7 @@ jobs:
           style: markdown
           compress: false
           llm-instruction: architecture
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
       
       - name: Upload Prompt File as Artifact
         uses: actions/upload-artifact@v4
