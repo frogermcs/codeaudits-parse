@@ -2,7 +2,11 @@
  * The entrypoint for the action. This file simply imports and runs the action's
  * main logic.
  */
+import dotenv from 'dotenv'
 import { run } from './main.js'
+
+// Load environment variables from .env file (for local development)
+dotenv.config()
 
 /* istanbul ignore next */
 run()

@@ -1,0 +1,26 @@
+name: TEST - This codebase - parse and submit for review
+
+on:
+  workflow_dispatch:
+
+jobs:
+  parse-repository:
+    runs-on: ubuntu-latest
+    name: Parse this repository for CodeAudits
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Parse and SubmitRepository
+        uses: ./
+        id: parse
+        with:
+          style: markdown
+          compress: false
+          llm-instruction: architecture
+      
+      - name: Upload Prompt File as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: parsed-repo.txt
+          path: parsed-repo.txt

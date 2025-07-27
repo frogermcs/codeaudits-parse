@@ -102,3 +102,6 @@ __tests__/runner/*
 *.code-workspace
 
 dist/
+
+# Ignore output files
+parsed-repo.txt
