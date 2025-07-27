@@ -8,10 +8,15 @@ export class GeminiSubmissionService {
 
   public async submit(
     parsedCode: string,
-    instructionName: string,
-    apiKey: string
+    instructionName: string
   ): Promise<void> {
     try {
+      // Read API key from environment variable
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error('GEMINI_API_KEY environment variable is required but not set');
+      }
+
       this.core.info(`Submitting to Gemini with instruction: ${instructionName}`);
 
       // 1. Read the instruction file

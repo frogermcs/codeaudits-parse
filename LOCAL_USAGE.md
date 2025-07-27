@@ -37,8 +37,7 @@ npm run local -- [options]
 - `-c, --compress`: Enable compression
 - `-w, --working-directory <dir>`: Working directory (default: '.')
 - `-o, --output <file>`: Output file name (default: 'parsed-repo.txt')
-- `-i, --instruction <file>`: Name of the instruction file for Gemini prompt
-- `--gemini-api-key <key>`: Gemini API key (can also be set as `GEMINI_API_KEY` environment variable)
+- `-i, --instruction <name>`: Name of the instruction file for Gemini prompt
 
 ### Examples
 
@@ -59,12 +58,7 @@ npm run local -- --working-directory ./src --output my-repo.txt
 
 4. **Use with Gemini API (reads from .env file)**:
 ```bash
-npm run local -- --style markdown --instruction architecture.md
-```
-
-5. **Override API key from command line**:
-```bash
-npm run local -- --gemini-api-key your_api_key_here
+npm run local -- --style markdown --instruction architecture
 ```
 
 ## Development

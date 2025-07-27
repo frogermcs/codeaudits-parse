@@ -25,7 +25,6 @@ program
   .option('-w, --working-directory <dir>', 'Working directory', '.')
   .option('-o, --output <file>', 'Output file name', 'parsed-repo.txt')
   .option('-i, --instruction <name>', 'Name of the instruction file for Gemini prompt')
-  .option('--gemini-api-key <key>', 'Gemini API key, can also be set as GEMINI_API_KEY env var')
   .action(async (options) => {
     try {
       await runLocal(options)

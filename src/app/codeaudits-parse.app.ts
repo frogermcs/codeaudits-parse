@@ -8,7 +8,6 @@ export interface ActionOptions {
   outputFilePath: string
   workingDirectory: string
   instruction?: string
-  geminiApiKey?: string
 }
 
 /**
@@ -33,8 +32,7 @@ export class CodeAuditsParseApp {
       compress: this.core.getBooleanInput('compress'),
       outputFilePath: this.core.getInput('output') || 'parsed-repo.txt',
       workingDirectory: this.core.getInput('working-directory'),
-      instruction: this.core.getInput('instruction') || undefined,
-      geminiApiKey: this.core.getInput('gemini-api-key') || undefined
+      instruction: this.core.getInput('llm-instruction') || undefined
     }
   }
 
@@ -57,7 +55,7 @@ export class CodeAuditsParseApp {
       this.repositoryParser.generateSummary(parseOptions, parseResult.packResult)
       
       // Step 2: Conditionally submit to Gemini (new)
-      if (actionOptions.instruction && actionOptions.geminiApiKey) {
+      if (actionOptions.instruction && process.env.GEMINI_API_KEY) {
         const parsedContent = await this.repositoryParser.readParsedContent(
           parseResult.absoluteWorkingDirectory,
           parseResult.outputPath
@@ -65,8 +63,7 @@ export class CodeAuditsParseApp {
 
         await this.geminiService.submit(
           parsedContent,
-          actionOptions.instruction,
-          actionOptions.geminiApiKey
+          actionOptions.instruction
         );
       }
 
