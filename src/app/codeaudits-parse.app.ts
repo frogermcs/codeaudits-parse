@@ -55,7 +55,7 @@ export class CodeAuditsParseApp {
       this.repositoryParser.generateSummary(parseOptions, parseResult.packResult)
       
       // Step 2: Conditionally submit to Gemini (new)
-      if (actionOptions.instruction && process.env.GEMINI_API_KEY) {
+      if (actionOptions.instruction) {
         const parsedContent = await this.repositoryParser.readParsedContent(
           parseResult.absoluteWorkingDirectory,
           parseResult.outputPath
@@ -65,6 +65,8 @@ export class CodeAuditsParseApp {
           parsedContent,
           actionOptions.instruction
         );
+      } else {
+        this.core.info('No LLM instruction provided, skipping Gemini submission.');
       }
 
       await this.core.summary.write()
