@@ -63,6 +63,10 @@ export class LocalCore implements ICoreInterface {
       console.log('')
       return this.summary
     },
+    addRaw: (raw: string) => {
+      console.log(raw)
+      return this.summary
+    },
     addCodeBlock: (code: string, lang?: string) => {
       console.log(`\`\`\`${lang || ''}\n${code}\n\`\`\``)
       return this.summary

@@ -31,15 +31,18 @@ export class GeminiSubmissionService {
       const prompt = `${instructionText}\n\n---\n\n${parsedCode}`;
 
       // 4. Send to Gemini and get response
-      const response = await ai.models.generateContent({
-            model,
-            config: {},
-            contents: [prompt],
-        });
+      // const response = await ai.models.generateContent({
+      //       model,
+      //       config: {},
+      //       contents: [prompt],
+      //   });
+
+      const response = { text : "Mocked response from **Gemini** for *testing* purposes" };
 
       // 5. Add response to the job summary
       this.core.summary
         .addHeading(`Gemini Analysis Results (${instructionName})`, 2)
+        .addRaw(response.text ?? 'no response from AI provided')
         .addCodeBlock(response.text ?? 'no response from AI provided', 'markdown');
 
       this.core.info('Successfully received response from Gemini.');
