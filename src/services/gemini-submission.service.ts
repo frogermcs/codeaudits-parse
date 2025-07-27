@@ -30,10 +30,16 @@ export class GeminiSubmissionService {
       // 3. Construct the full prompt
       const prompt = `${instructionText}\n\n---\n\n${parsedCode}`;
 
+      const systemPrompt = "You are an expert software architect and code reviewer. " +
+      "You will receive entire codebase and a specific audit request (e.g., refactoring for a desired architectural pattern, SOLID adherence, complexity reduction, etc.). " +
+      "Focus on the given code and user request. Keep explanations concise but thorough. Avoid including unrelated or speculative information. " +
+      "The ideal response should focus on making the next actionable steps to improve the codebase and meet prompt requirements. " +
+      "The response should come in markdown format as the primary output is Github Actions summary page. ";
+
       // 4. Send to Gemini and get response
       const response = await ai.models.generateContent({
             model,
-            config: {},
+            config: {systemInstruction: [systemPrompt]},
             contents: [prompt],
         });
 
