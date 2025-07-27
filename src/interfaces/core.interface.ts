@@ -17,7 +17,7 @@ export interface ISummary {
   addHeading(heading: string, level?: number): ISummary
   addTable(table: any): ISummary
   addBreak(): ISummary
-  addRaw(raw: string): ISummary
+  addRaw(raw: string, addEOL?: boolean): ISummary
   addCodeBlock(code: string, lang?: string): ISummary
   addLink(text: string, url: string): ISummary
   write(): Promise<void>

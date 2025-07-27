@@ -49,8 +49,8 @@ export class GitHubActionsCore implements ICoreInterface {
       this.coreImpl.summary.addBreak()
       return this.summary
     },
-    addRaw: (raw: string) => {
-      this.coreImpl.summary.addRaw(raw)
+    addRaw: (raw: string, addEOL?: boolean) => {
+      this.coreImpl.summary.addRaw(raw, addEOL)
       return this.summary
     },
     addCodeBlock: (code: string, lang?: string) => {

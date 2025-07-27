@@ -31,34 +31,16 @@ export class GeminiSubmissionService {
       const prompt = `${instructionText}\n\n---\n\n${parsedCode}`;
 
       // 4. Send to Gemini and get response
-      // const response = await ai.models.generateContent({
-      //       model,
-      //       config: {},
-      //       contents: [prompt],
-      //   });
-
-    const myMarkdown = `## My Header
-
----
-Some stuff here :green_circle: With a [link](https://github.com)
-
-### Maybe Add A table
-
-| Header1 | Header2 | Header3 |
-|--- |--- | --- |
-| value1 | value2 | value |
-`
-
-    await this.core.summary.addRaw(myMarkdown).write()
-
-      const response = { text : myMarkdown };
+      const response = await ai.models.generateContent({
+            model,
+            config: {},
+            contents: [prompt],
+        });
 
       // 5. Add response to the job summary
       this.core.summary
         .addHeading(`Gemini Analysis Results (${instructionName})`, 2)
-        .addRaw('Some content here :speech_balloon:')
-        .addRaw(response.text ?? 'no response from AI provided')
-        .addCodeBlock(response.text ?? 'no response from AI provided', 'markdown');
+        .addRaw(response.text ?? 'no response from AI provided');
 
       this.core.info('Successfully received response from Gemini.');
     } catch (error) {
