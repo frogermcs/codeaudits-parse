@@ -28,19 +28,27 @@ export class GeminiSubmissionService {
       const model = 'gemini-2.0-flash';
 
       // 3. Construct the full prompt
-      const prompt = `${instructionText}\n\n---\n\n${parsedCode}`;
+      const prompt = `${instructionText}\n\n---\n\n${parsedCode}`;      
 
       // 4. Send to Gemini and get response
       const response = await ai.models.generateContent({
             model,
-            config: {},
+            config: {
+              systemInstruction: [
+                "You are an expert software architect and code reviewer. ",
+                "Focus on the given code and user request. Keep explanations concise but thorough. Avoid including unrelated or speculative information. ",
+                "The ideal response should focus on making the next actionable steps to improve the codebase and meet prompt requirements. ",
+                "The response should come in markdown format as the primary output is Github Actions summary page. ",
+                "Do not use conversational phrases such as 'Okay,' 'Sure,' or 'Let me.' Start directly with the analysis, plan, or output. "
+              ]
+            },
             contents: [prompt],
         });
 
       // 5. Add response to the job summary
       this.core.summary
         .addHeading(`Gemini Analysis Results (${instructionName})`, 2)
-        .addCodeBlock(response.text ?? 'no response from AI provided', 'markdown');
+        .addRaw(response.text ?? 'no response from AI provided');
 
       this.core.info('Successfully received response from Gemini.');
     } catch (error) {
