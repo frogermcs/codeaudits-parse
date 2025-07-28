@@ -1,14 +1,13 @@
 import { ICoreInterface } from '../interfaces/core.interface.js';
 import { GoogleGenAI } from '@google/genai';
-import fs from 'node:fs/promises';
-import path from 'node:path';
 
 export class GeminiSubmissionService {
   constructor(private core: ICoreInterface) {}
 
   public async submit(
     parsedCode: string,
-    instructionName: string
+    promptText: string,
+    promptLabel?: string
   ): Promise<void> {
     try {
       // Read API key from environment variable
@@ -17,35 +16,16 @@ export class GeminiSubmissionService {
         throw new Error('GEMINI_API_KEY environment variable is required but not set');
       }
 
-      this.core.info(`Submitting to Gemini with instruction: ${instructionName}`);
+      this.core.info(`Submitting to Gemini${promptLabel ? ` with prompt: ${promptLabel}` : ''}`);
 
-      // 1. Load list of available instructions
-      const instructionsDir = path.resolve(process.cwd(), 'src/instructions');
-      const files = await fs.readdir(instructionsDir);
-      const availableInstructions = files
-        .filter(file => file.endsWith('.md'))
-        .map(file => file.replace('.md', ''))
-        .sort();
-
-      // 2. Check if selected instruction exists
-      if (!availableInstructions.includes(instructionName)) {
-        throw new Error(
-          `Instruction '${instructionName}' doesn't exist. Pick one from existing: ${availableInstructions.join(', ')}`
-        );
-      }
-
-      // 3. Read the instruction file
-      const instructionPath = path.resolve(process.cwd(), `src/instructions/${instructionName}.md`);
-      const instructionText = await fs.readFile(instructionPath, 'utf-8');
-
-      // 4. Initialize Gemini client
+      // Initialize Gemini client
       const ai = new GoogleGenAI({apiKey: apiKey});
       const model = 'gemini-2.0-flash';
 
-      // 5. Construct the full prompt
-      const prompt = `${instructionText}\n\n---\n\n${parsedCode}`;      
+      // Construct the full prompt
+      const prompt = `${parsedCode}\n\n---\n\n${promptText}`;
 
-      // 6. Send to Gemini and get response
+      // Send to Gemini and get response
       const response = await ai.models.generateContent({
             model,
             config: {
@@ -60,9 +40,10 @@ export class GeminiSubmissionService {
             contents: [prompt],
         });
 
-      // 7. Add response to the job summary
+      // Add response to the job summary
+      const headingLabel = promptLabel ? `Gemini Analysis Results (${promptLabel})` : 'Gemini Analysis Results';
       this.core.summary
-        .addHeading(`Gemini Analysis Results (${instructionName})`, 2)
+        .addHeading(headingLabel, 2)
         .addRaw(response.text ?? 'no response from AI provided');
 
       this.core.info('Successfully received response from Gemini.');

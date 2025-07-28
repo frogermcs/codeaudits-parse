@@ -1,4 +1,4 @@
-name: TEST - This codebase - parse and submit for review
+name: TEST - This codebase - parse and submit with custom prompt for review
 
 on:
   workflow_dispatch:
@@ -17,7 +17,7 @@ jobs:
         with:
           style: markdown
           compress: false
-          llm-prompt: architecture-refactoring
+          llm-custom-prompt: simplification-prompts
           gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
       
       - name: Upload Prompt File as Artifact

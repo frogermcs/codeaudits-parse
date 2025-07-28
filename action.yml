@@ -17,8 +17,11 @@ inputs:
     description: The directory in which to run the action. Defaults to the repository root.
     default: '.'
     required: false
-  llm-instruction:
-    description: 'The name of the instruction file for the Gemini prompt (available instructions in README).'
+  llm-prompt:
+    description: 'The name of the prompt file for the Gemini prompt (available prompts in README).'
+    required: false
+  llm-custom-prompt:
+    description: 'The name of the custom prompt file from /.codeaudits/prompts directory in the repository.'
     required: false
   gemini-api-key:
     description: 'Gemini API key for AI-powered code analysis'

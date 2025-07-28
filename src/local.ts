@@ -24,7 +24,8 @@ program
   .option('-c, --compress', 'Enable compression', false)
   .option('-w, --working-directory <dir>', 'Working directory', '.')
   .option('-o, --output <file>', 'Output file name', 'parsed-repo.txt')
-  .option('-i, --instruction <name>', 'Name of the instruction file for Gemini prompt')
+  .option('-i, --prompt <name>', 'Name of the predefined prompt file for Gemini prompt')
+  .option('--custom-prompt <name>', 'Name of the custom prompt file from /.codeaudits/prompts directory')
   .action(async (options) => {
     try {
       await runLocal(options)

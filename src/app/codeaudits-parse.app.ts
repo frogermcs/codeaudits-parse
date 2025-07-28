@@ -1,5 +1,6 @@
 import { ICoreInterface } from '../interfaces/core.interface.js'
 import { GeminiSubmissionService } from '../services/gemini-submission.service.js'
+import { PromptLoaderService } from '../services/prompt-loader.service.js'
 import { RepositoryParser, RepositoryParseOptions } from '../services/repository-parser.service.js'
 
 export interface ActionOptions {
@@ -7,7 +8,8 @@ export interface ActionOptions {
   compress: boolean
   outputFilePath: string
   workingDirectory: string
-  instruction?: string
+  prompt?: string
+  customPrompt?: string
 }
 
 /**
@@ -17,10 +19,12 @@ export interface ActionOptions {
 export class CodeAuditsParseApp {
   private repositoryParser: RepositoryParser
   private geminiService: GeminiSubmissionService;
+  private promptLoader: PromptLoaderService;
 
   constructor(private core: ICoreInterface) {
     this.repositoryParser = new RepositoryParser(core)
     this.geminiService = new GeminiSubmissionService(core);
+    this.promptLoader = new PromptLoaderService(core);
   }
 
   /**
@@ -32,7 +36,8 @@ export class CodeAuditsParseApp {
       compress: this.core.getBooleanInput('compress'),
       outputFilePath: this.core.getInput('output') || 'parsed-repo.txt',
       workingDirectory: this.core.getInput('working-directory'),
-      instruction: this.core.getInput('llm-instruction') || undefined
+      prompt: this.core.getInput('llm-prompt') || undefined,
+      customPrompt: this.core.getInput('llm-custom-prompt') || undefined
     }
   }
 
@@ -55,18 +60,37 @@ export class CodeAuditsParseApp {
       this.repositoryParser.generateSummary(parseOptions, parseResult.packResult)
       
       // Step 2: Conditionally submit to Gemini (new)
-      if (actionOptions.instruction) {
+      if (actionOptions.prompt || actionOptions.customPrompt) {
         const parsedContent = await this.repositoryParser.readParsedContent(
           parseResult.absoluteWorkingDirectory,
           parseResult.outputPath
         );
 
-        await this.geminiService.submit(
-          parsedContent,
-          actionOptions.instruction
-        );
+        if (actionOptions.prompt && actionOptions.customPrompt) {
+          this.core.setFailed('Cannot use both llm-prompt and llm-custom-prompt at the same time. Please choose one.');
+          return;
+        }
+
+        if (actionOptions.prompt) {
+          const prompt = await this.promptLoader.loadPredefinedPrompt(actionOptions.prompt);
+          await this.geminiService.submit(
+            parsedContent,
+            prompt.text,
+            prompt.label
+          );
+        } else if (actionOptions.customPrompt) {
+          const prompt = await this.promptLoader.loadCustomPrompt(
+            actionOptions.customPrompt,
+            parseResult.absoluteWorkingDirectory
+          );
+          await this.geminiService.submit(
+            parsedContent,
+            prompt.text,
+            prompt.label
+          );
+        }
       } else {
-        this.core.info('No LLM instruction provided, skipping Gemini submission.');
+        this.core.info('No LLM prompt provided, skipping Gemini submission.');
       }
 
       await this.core.summary.write()
