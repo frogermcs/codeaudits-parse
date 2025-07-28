@@ -1,6 +1,6 @@
 import { ICoreInterface } from '../interfaces/core.interface.js'
 import { GeminiSubmissionService } from '../services/gemini-submission.service.js'
-import { InstructionLoaderService } from '../services/instruction-loader.service.js'
+import { PromptLoaderService } from '../services/prompt-loader.service.js'
 import { RepositoryParser, RepositoryParseOptions } from '../services/repository-parser.service.js'
 
 export interface ActionOptions {
@@ -8,8 +8,8 @@ export interface ActionOptions {
   compress: boolean
   outputFilePath: string
   workingDirectory: string
-  instruction?: string
-  customInstruction?: string
+  prompt?: string
+  customPrompt?: string
 }
 
 /**
@@ -19,12 +19,12 @@ export interface ActionOptions {
 export class CodeAuditsParseApp {
   private repositoryParser: RepositoryParser
   private geminiService: GeminiSubmissionService;
-  private instructionLoader: InstructionLoaderService;
+  private promptLoader: PromptLoaderService;
 
   constructor(private core: ICoreInterface) {
     this.repositoryParser = new RepositoryParser(core)
     this.geminiService = new GeminiSubmissionService(core);
-    this.instructionLoader = new InstructionLoaderService(core);
+    this.promptLoader = new PromptLoaderService(core);
   }
 
   /**
@@ -36,8 +36,8 @@ export class CodeAuditsParseApp {
       compress: this.core.getBooleanInput('compress'),
       outputFilePath: this.core.getInput('output') || 'parsed-repo.txt',
       workingDirectory: this.core.getInput('working-directory'),
-      instruction: this.core.getInput('llm-instruction') || undefined,
-      customInstruction: this.core.getInput('llm-custom-instruction') || undefined
+      prompt: this.core.getInput('llm-prompt') || undefined,
+      customPrompt: this.core.getInput('llm-custom-prompt') || undefined
     }
   }
 
@@ -60,37 +60,37 @@ export class CodeAuditsParseApp {
       this.repositoryParser.generateSummary(parseOptions, parseResult.packResult)
       
       // Step 2: Conditionally submit to Gemini (new)
-      if (actionOptions.instruction || actionOptions.customInstruction) {
+      if (actionOptions.prompt || actionOptions.customPrompt) {
         const parsedContent = await this.repositoryParser.readParsedContent(
           parseResult.absoluteWorkingDirectory,
           parseResult.outputPath
         );
 
-        if (actionOptions.instruction && actionOptions.customInstruction) {
-          this.core.setFailed('Cannot use both llm-instruction and llm-custom-instruction at the same time. Please choose one.');
+        if (actionOptions.prompt && actionOptions.customPrompt) {
+          this.core.setFailed('Cannot use both llm-prompt and llm-custom-prompt at the same time. Please choose one.');
           return;
         }
 
-        if (actionOptions.instruction) {
-          const instruction = await this.instructionLoader.loadPredefinedInstruction(actionOptions.instruction);
+        if (actionOptions.prompt) {
+          const prompt = await this.promptLoader.loadPredefinedPrompt(actionOptions.prompt);
           await this.geminiService.submit(
             parsedContent,
-            instruction.text,
-            instruction.label
+            prompt.text,
+            prompt.label
           );
-        } else if (actionOptions.customInstruction) {
-          const instruction = await this.instructionLoader.loadCustomInstruction(
-            actionOptions.customInstruction,
+        } else if (actionOptions.customPrompt) {
+          const prompt = await this.promptLoader.loadCustomPrompt(
+            actionOptions.customPrompt,
             parseResult.absoluteWorkingDirectory
           );
           await this.geminiService.submit(
             parsedContent,
-            instruction.text,
-            instruction.label
+            prompt.text,
+            prompt.label
           );
         }
       } else {
-        this.core.info('No LLM instruction provided, skipping Gemini submission.');
+        this.core.info('No LLM prompt provided, skipping Gemini submission.');
       }
 
       await this.core.summary.write()

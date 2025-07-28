@@ -46,7 +46,7 @@ jobs:
         with:
           style: markdown            # Format of the parsed output
           compress: true             # Enable intelligent code parsing to reduce tokens
-          llm-instruction: architecture-refactoring  # Optional: AI analysis instruction
+          llm-prompt: architecture-refactoring  # Optional: AI analysis prompt
           gemini-api-key: ${{ secrets.GEMINI_API_KEY }}  # Optional: for AI analysis
       
       - name: Upload parsed file as artifact
@@ -63,8 +63,8 @@ jobs:
 | `style` | Parsed document style. Use 'markdown', 'xml' or 'plain' | `markdown` | No |
 | `compress` | Run intelligent code parsing to reduce tokens | `false` | No |
 | `working-directory` | The directory in which to run the action. Defaults to the repository root | `.` | No |
-| `llm-instruction` | The name of the instruction file for the Gemini prompt (see [Available Instructions](#available-instructions)) | | No |
-| `llm-custom-instruction` | The name of the custom instruction file from `/.codeaudits/instructions` directory in your repository | | No |
+| `llm-prompt` | The name of the prompt file for the Gemini prompt (see [Available Prompts](#available-prompts)) | | No |
+| `llm-custom-prompt` | The name of the custom prompt file from `/.codeaudits/prompts` directory in your repository | | No |
 | `gemini-api-key` | Gemini API key for AI-powered code analysis | | No |
 
 ## Outputs
@@ -75,9 +75,9 @@ jobs:
 | `parsed-file-name` | Name of the parsed output file |
 | `submission-status` | Result of the submission to CodeAudits |
 
-## Available Instructions
+## Available Prompts
 
-When using the `llm-instruction` input, you can choose from the following predefined instruction files:
+When using the `llm-prompt` input, you can choose from the following predefined prompt files:
 
 - `architecture-refactoring` - Analysis focused on architectural improvements and refactoring opportunities
 - `dry-kiss-yagni` - Review based on DRY, KISS, and YAGNI principles
@@ -88,41 +88,41 @@ When using the `llm-instruction` input, you can choose from the following predef
 - `simplification-hints` - Suggestions for code simplification and optimization
 - `solid` - Review based on SOLID principles
 
-**Note:** If you provide an invalid instruction name, the action will fail with a helpful error message listing all available options.
+**Note:** If you provide an invalid prompt name, the action will fail with a helpful error message listing all available options.
 
-## Custom Instructions
+## Custom Prompts
 
-In addition to the predefined instructions, you can create and use custom instructions by:
+In addition to the predefined prompts, you can create and use custom prompts by:
 
-1. Creating a `/.codeaudits/instructions` directory in your repository
-2. Adding your custom instruction file (e.g., `my-custom-analysis.md`)
-3. Using the `llm-custom-instruction` input with the filename
+1. Creating a `/.codeaudits/prompts` directory in your repository
+2. Adding your custom prompt file (e.g., `my-custom-analysis.md`)
+3. Using the `llm-custom-prompt` input with the filename
 
-**Example custom instruction file structure:**
+**Example custom prompt file structure:**
 ```
 your-repository/
 ├── .codeaudits/
-│   └── instructions/
+│   └── prompts/
 │       ├── performance-analysis.md
 │       ├── security-review.md
 │       └── api-design-review.md
 └── ... (your code)
 ```
 
-**Usage with custom instruction:**
+**Usage with custom prompt:**
 ```yaml
 - name: Run Custom AI Analysis
   uses: codeaudits/codeaudits-action@v1
   with:
     style: markdown
-    llm-custom-instruction: performance-analysis.md  # or just: performance-analysis
+    llm-custom-prompt: performance-analysis.md  # or just: performance-analysis
     gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
 ```
 
 **Important notes:**
-- You cannot use both `llm-instruction` and `llm-custom-instruction` at the same time
+- You cannot use both `llm-prompt` and `llm-custom-prompt` at the same time
 - The `.md` extension is optional when specifying the filename
-- Custom instruction files should contain markdown-formatted prompts for the AI analysis
+- Custom prompt files should contain markdown-formatted prompts for the AI analysis
 
 ## Examples
 
@@ -143,11 +143,11 @@ your-repository/
   with:
     style: markdown
     compress: true
-    llm-instruction: architecture-refactoring
+    llm-prompt: architecture-refactoring
     gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
 ```
 
-### AI-Powered Code Analysis with Custom Instructions
+### AI-Powered Code Analysis with Custom Prompts
 
 ```yaml
 - name: Run Custom AI Analysis
@@ -155,7 +155,17 @@ your-repository/
   with:
     style: markdown
     compress: true
-    llm-custom-instruction: security-review
+    llm-custom-prompt: security-review
+    gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+```
+
+```yaml
+- name: Run Custom AI Analysis
+  uses: codeaudits/codeaudits-action@v1
+  with:
+    style: markdown
+    compress: true
+    llm-custom-prompt: security-review
     gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
 ```
 

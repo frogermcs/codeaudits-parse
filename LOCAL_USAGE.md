@@ -6,8 +6,8 @@ You can now run th### Available Options
 - `-c, --compress`: Enable compression
 - `-w, --working-directory <dir>`: Working directory (default: '.')
 - `-o, --output <file>`: Output file name (default: 'parsed-repo.txt')
-- `-i, --instruction <name>`: Name of the predefined instruction file for Gemini prompt
-- `--custom-instruction <name>`: Name of the custom instruction file from /.codeaudits/instructions directoryudits-parse tool locally without requiring GitHub Actions environment.
+- `-i, --prompt <name>`: Name of the predefined prompt file for Gemini prompt
+- `--custom-prompt <name>`: Name of the custom prompt file from /.codeaudits/prompts directory
 
 ## Installation and Build
 
@@ -44,7 +44,7 @@ npm run local -- [options]
 - `-c, --compress`: Enable compression
 - `-w, --working-directory <dir>`: Working directory (default: '.')
 - `-o, --output <file>`: Output file name (default: 'parsed-repo.txt')
-- `-i, --instruction <name>`: Name of the instruction file for Gemini prompt
+- `-i, --prompt <name>`: Name of the prompt file for Gemini prompt
 
 ### Examples
 
@@ -65,15 +65,15 @@ npm run local -- --working-directory ./src --output my-repo.txt
 
 4. **Use with Gemini API (reads from .env file)**:
 ```bash
-npm run local -- --style markdown --instruction architecture
+npm run local -- --style markdown --prompt architecture
 ```
 
-5. **Use with custom instruction**:
+5. **Use with custom prompt**:
 ```bash
-npm run local -- --style markdown --custom-instruction simplification-prompts
+npm run local -- --style markdown --custom-prompt simplification-prompts
 ```
 
-**Note**: For custom instructions, ensure you have a `/.codeaudits/instructions/` directory in your project with the instruction file (e.g., `my-custom-analysis.md`).
+**Note**: For custom prompts, ensure you have a `/.codeaudits/prompts/` directory in your project with the prompt file (e.g., `my-custom-analysis.md`).
 
 ## Development
 

@@ -6,8 +6,8 @@ export class GeminiSubmissionService {
 
   public async submit(
     parsedCode: string,
-    instructionText: string,
-    instructionLabel?: string
+    promptText: string,
+    promptLabel?: string
   ): Promise<void> {
     try {
       // Read API key from environment variable
@@ -16,14 +16,14 @@ export class GeminiSubmissionService {
         throw new Error('GEMINI_API_KEY environment variable is required but not set');
       }
 
-      this.core.info(`Submitting to Gemini${instructionLabel ? ` with instruction: ${instructionLabel}` : ''}`);
+      this.core.info(`Submitting to Gemini${promptLabel ? ` with prompt: ${promptLabel}` : ''}`);
 
       // Initialize Gemini client
       const ai = new GoogleGenAI({apiKey: apiKey});
       const model = 'gemini-2.0-flash';
 
       // Construct the full prompt
-      const prompt = `${parsedCode}\n\n---\n\n${instructionText}`;
+      const prompt = `${parsedCode}\n\n---\n\n${promptText}`;
 
       // Send to Gemini and get response
       const response = await ai.models.generateContent({
@@ -41,7 +41,7 @@ export class GeminiSubmissionService {
         });
 
       // Add response to the job summary
-      const headingLabel = instructionLabel ? `Gemini Analysis Results (${instructionLabel})` : 'Gemini Analysis Results';
+      const headingLabel = promptLabel ? `Gemini Analysis Results (${promptLabel})` : 'Gemini Analysis Results';
       this.core.summary
         .addHeading(headingLabel, 2)
         .addRaw(response.text ?? 'no response from AI provided');
