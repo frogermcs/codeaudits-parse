@@ -1,5 +1,6 @@
 import { ICoreInterface } from '../interfaces/core.interface.js'
 import { GeminiSubmissionService } from '../services/gemini-submission.service.js'
+import { InstructionLoaderService } from '../services/instruction-loader.service.js'
 import { RepositoryParser, RepositoryParseOptions } from '../services/repository-parser.service.js'
 
 export interface ActionOptions {
@@ -18,10 +19,12 @@ export interface ActionOptions {
 export class CodeAuditsParseApp {
   private repositoryParser: RepositoryParser
   private geminiService: GeminiSubmissionService;
+  private instructionLoader: InstructionLoaderService;
 
   constructor(private core: ICoreInterface) {
     this.repositoryParser = new RepositoryParser(core)
     this.geminiService = new GeminiSubmissionService(core);
+    this.instructionLoader = new InstructionLoaderService(core);
   }
 
   /**
@@ -69,17 +72,21 @@ export class CodeAuditsParseApp {
         }
 
         if (actionOptions.instruction) {
+          const instruction = await this.instructionLoader.loadPredefinedInstruction(actionOptions.instruction);
           await this.geminiService.submit(
             parsedContent,
-            actionOptions.instruction,
-            'predefined'
+            instruction.text,
+            instruction.label
           );
         } else if (actionOptions.customInstruction) {
+          const instruction = await this.instructionLoader.loadCustomInstruction(
+            actionOptions.customInstruction,
+            parseResult.absoluteWorkingDirectory
+          );
           await this.geminiService.submit(
             parsedContent,
-            actionOptions.customInstruction,
-            'custom',
-            parseResult.absoluteWorkingDirectory
+            instruction.text,
+            instruction.label
           );
         }
       } else {
