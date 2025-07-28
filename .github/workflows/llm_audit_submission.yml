@@ -17,7 +17,7 @@ jobs:
         with:
           style: markdown
           compress: false
-          llm-instruction: what-if-i-pick-wrong-file
+          llm-instruction: architecture-refactoring
           gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
       
       - name: Upload Prompt File as Artifact
