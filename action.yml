@@ -18,8 +18,18 @@ inputs:
     default: '.'
     required: false
   llm-instruction:
-    description: 'The name of the instruction file for the Gemini prompt (e.g., architecture-refactoring).'
+    description: 'The name of the instruction file for the Gemini prompt'
     required: false
+    type: choice
+    options:
+      - architecture-refactoring
+      - dry-kiss-yagni
+      - essential-software-patterns
+      - functionalities-analysis
+      - missing-tests
+      - possible-bugs
+      - simplification-hints
+      - solid
   gemini-api-key:
     description: 'Gemini API key for AI-powered code analysis'
     required: false
