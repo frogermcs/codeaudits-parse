@@ -1,11 +1,9 @@
 # Context
-You have finished parsing and indexing the entire codebase. All source files,
-tests, build scripts, and CI configs are available to you in your vector store
-or AST cache.
+You have finished parsing and indexing the entire codebase.
 
 # Assignment
 Craft **three concise prompts** that an engineer can drop into a coding agent
-to drive code‑simplification work.  Each prompt must be:
+to drive code simplification of this repository.  Each prompt must be:
 
 1. Self‑contained (no extra context required beyond the parsed repo you hold)
 2. Copy‑paste friendly (≤ 30 lines each, wrapped in back‑ticks)
