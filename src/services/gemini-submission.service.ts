@@ -21,7 +21,27 @@ export class GeminiSubmissionService {
 
       // 1. Read the instruction file
       const instructionPath = path.resolve(process.cwd(), `src/instructions/${instructionName}.md`);
-      const instructionText = await fs.readFile(instructionPath, 'utf-8');
+      let instructionText: string;
+      
+      try {
+        instructionText = await fs.readFile(instructionPath, 'utf-8');
+      } catch (fileError) {
+        // Get list of available instructions
+        const instructionsDir = path.resolve(process.cwd(), 'src/instructions');
+        try {
+          const files = await fs.readdir(instructionsDir);
+          const availableInstructions = files
+            .filter(file => file.endsWith('.md'))
+            .map(file => file.replace('.md', ''))
+            .sort();
+          
+          throw new Error(
+            `Instruction '${instructionName}' doesn't exist. Pick one from existing: ${availableInstructions.join(', ')}`
+          );
+        } catch (dirError) {
+          throw new Error(`Instruction '${instructionName}' doesn't exist and couldn't read instructions directory`);
+        }
+      }
 
       // 2. Initialize Gemini client
       const ai = new GoogleGenAI({apiKey: apiKey});
