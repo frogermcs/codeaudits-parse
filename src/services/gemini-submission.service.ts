@@ -19,18 +19,33 @@ export class GeminiSubmissionService {
 
       this.core.info(`Submitting to Gemini with instruction: ${instructionName}`);
 
-      // 1. Read the instruction file
+      // 1. Load list of available instructions
+      const instructionsDir = path.resolve(process.cwd(), 'src/instructions');
+      const files = await fs.readdir(instructionsDir);
+      const availableInstructions = files
+        .filter(file => file.endsWith('.md'))
+        .map(file => file.replace('.md', ''))
+        .sort();
+
+      // 2. Check if selected instruction exists
+      if (!availableInstructions.includes(instructionName)) {
+        throw new Error(
+          `Instruction '${instructionName}' doesn't exist. Pick one from existing: ${availableInstructions.join(', ')}`
+        );
+      }
+
+      // 3. Read the instruction file
       const instructionPath = path.resolve(process.cwd(), `src/instructions/${instructionName}.md`);
       const instructionText = await fs.readFile(instructionPath, 'utf-8');
 
-      // 2. Initialize Gemini client
+      // 4. Initialize Gemini client
       const ai = new GoogleGenAI({apiKey: apiKey});
       const model = 'gemini-2.0-flash';
 
-      // 3. Construct the full prompt
+      // 5. Construct the full prompt
       const prompt = `${instructionText}\n\n---\n\n${parsedCode}`;      
 
-      // 4. Send to Gemini and get response
+      // 6. Send to Gemini and get response
       const response = await ai.models.generateContent({
             model,
             config: {
@@ -45,7 +60,7 @@ export class GeminiSubmissionService {
             contents: [prompt],
         });
 
-      // 5. Add response to the job summary
+      // 7. Add response to the job summary
       this.core.summary
         .addHeading(`Gemini Analysis Results (${instructionName})`, 2)
         .addRaw(response.text ?? 'no response from AI provided');
