@@ -159,16 +159,6 @@ your-repository/
     gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
 ```
 
-```yaml
-- name: Run Custom AI Analysis
-  uses: codeaudits/codeaudits-action@v1
-  with:
-    style: markdown
-    compress: true
-    llm-custom-prompt: security-review
-    gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
-```
-
 **Setting up Gemini API Key:**
 1. Get your API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
 2. Add it as a repository secret named `GEMINI_API_KEY`
