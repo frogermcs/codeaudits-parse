@@ -8,11 +8,11 @@ Here's [CodeAudits documentation](https://codeaudits.ai/docs/howto) about how to
 
 ## Overview
 
-This action uses the [Repomix](https://github.com/yamadashy/repomix) library to generate a comprehensive text representation of your codebase and optionally submits it to CodeAudits.ai. This allows you to:
+This action uses the [Repomix](https://github.com/yamadashy/repomix) library to generate a comprehensive text representation of your codebase and optionally submits it to Google Gemini with selected prompt. This allows you to:
 
 - Create a single document containing your entire codebase in a readable format
 - Analyze your code structure and organization
-- Submit your code for automated auditing and analysis through CodeAudits.ai
+- Submit your code for AI auditing and analysis through Google Gemini
 
 ## Usage
 
