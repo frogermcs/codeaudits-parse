@@ -64,6 +64,7 @@ jobs:
 | `compress` | Run intelligent code parsing to reduce tokens | `false` | No |
 | `working-directory` | The directory in which to run the action. Defaults to the repository root | `.` | No |
 | `llm-instruction` | The name of the instruction file for the Gemini prompt (see [Available Instructions](#available-instructions)) | | No |
+| `llm-custom-instruction` | The name of the custom instruction file from `/.codeaudits/instructions` directory in your repository | | No |
 | `gemini-api-key` | Gemini API key for AI-powered code analysis | | No |
 
 ## Outputs
@@ -89,6 +90,40 @@ When using the `llm-instruction` input, you can choose from the following predef
 
 **Note:** If you provide an invalid instruction name, the action will fail with a helpful error message listing all available options.
 
+## Custom Instructions
+
+In addition to the predefined instructions, you can create and use custom instructions by:
+
+1. Creating a `/.codeaudits/instructions` directory in your repository
+2. Adding your custom instruction file (e.g., `my-custom-analysis.md`)
+3. Using the `llm-custom-instruction` input with the filename
+
+**Example custom instruction file structure:**
+```
+your-repository/
+├── .codeaudits/
+│   └── instructions/
+│       ├── performance-analysis.md
+│       ├── security-review.md
+│       └── api-design-review.md
+└── ... (your code)
+```
+
+**Usage with custom instruction:**
+```yaml
+- name: Run Custom AI Analysis
+  uses: codeaudits/codeaudits-action@v1
+  with:
+    style: markdown
+    llm-custom-instruction: performance-analysis.md  # or just: performance-analysis
+    gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+```
+
+**Important notes:**
+- You cannot use both `llm-instruction` and `llm-custom-instruction` at the same time
+- The `.md` extension is optional when specifying the filename
+- Custom instruction files should contain markdown-formatted prompts for the AI analysis
+
 ## Examples
 
 ### Basic Analysis
@@ -109,6 +144,18 @@ When using the `llm-instruction` input, you can choose from the following predef
     style: markdown
     compress: true
     llm-instruction: architecture-refactoring
+    gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+```
+
+### AI-Powered Code Analysis with Custom Instructions
+
+```yaml
+- name: Run Custom AI Analysis
+  uses: codeaudits/codeaudits-action@v1
+  with:
+    style: markdown
+    compress: true
+    llm-custom-instruction: security-review
     gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
 ```
 

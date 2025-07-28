@@ -8,7 +8,9 @@ export class GeminiSubmissionService {
 
   public async submit(
     parsedCode: string,
-    instructionName: string
+    instructionName: string,
+    instructionType: 'predefined' | 'custom' = 'predefined',
+    workingDirectory?: string
   ): Promise<void> {
     try {
       // Read API key from environment variable
@@ -17,26 +19,53 @@ export class GeminiSubmissionService {
         throw new Error('GEMINI_API_KEY environment variable is required but not set');
       }
 
-      this.core.info(`Submitting to Gemini with instruction: ${instructionName}`);
+      this.core.info(`Submitting to Gemini with ${instructionType} instruction: ${instructionName}`);
 
-      // 1. Load list of available instructions
-      const instructionsDir = path.resolve(process.cwd(), 'src/instructions');
-      const files = await fs.readdir(instructionsDir);
-      const availableInstructions = files
-        .filter(file => file.endsWith('.md'))
-        .map(file => file.replace('.md', ''))
-        .sort();
+      let instructionText: string;
+      let instructionPath: string;
 
-      // 2. Check if selected instruction exists
-      if (!availableInstructions.includes(instructionName)) {
-        throw new Error(
-          `Instruction '${instructionName}' doesn't exist. Pick one from existing: ${availableInstructions.join(', ')}`
-        );
+      if (instructionType === 'custom') {
+        // Handle custom instructions from repository's /.codeaudits/instructions directory
+        if (!workingDirectory) {
+          throw new Error('Working directory is required for custom instructions');
+        }
+
+        // Construct path to custom instruction
+        const instructionFileName = instructionName.endsWith('.md') ? instructionName : `${instructionName}.md`;
+        instructionPath = path.resolve(workingDirectory, '.codeaudits', 'instructions', instructionFileName);
+        
+        // Check if the custom instruction file exists
+        try {
+          await fs.access(instructionPath);
+        } catch (error) {
+          throw new Error(
+            `Custom instruction file '${instructionFileName}' not found in /.codeaudits/instructions directory. Please ensure the file exists.`
+          );
+        }
+
+        // Read the custom instruction file
+        instructionText = await fs.readFile(instructionPath, 'utf-8');
+      } else {
+        // Handle predefined instructions (original logic)
+        // 1. Load list of available instructions
+        const instructionsDir = path.resolve(process.cwd(), 'src/instructions');
+        const files = await fs.readdir(instructionsDir);
+        const availableInstructions = files
+          .filter(file => file.endsWith('.md'))
+          .map(file => file.replace('.md', ''))
+          .sort();
+
+        // 2. Check if selected instruction exists
+        if (!availableInstructions.includes(instructionName)) {
+          throw new Error(
+            `Instruction '${instructionName}' doesn't exist. Pick one from existing: ${availableInstructions.join(', ')}`
+          );
+        }
+
+        // 3. Read the instruction file
+        instructionPath = path.resolve(process.cwd(), `src/instructions/${instructionName}.md`);
+        instructionText = await fs.readFile(instructionPath, 'utf-8');
       }
-
-      // 3. Read the instruction file
-      const instructionPath = path.resolve(process.cwd(), `src/instructions/${instructionName}.md`);
-      const instructionText = await fs.readFile(instructionPath, 'utf-8');
 
       // 4. Initialize Gemini client
       const ai = new GoogleGenAI({apiKey: apiKey});
@@ -61,8 +90,9 @@ export class GeminiSubmissionService {
         });
 
       // 7. Add response to the job summary
+      const instructionLabel = instructionType === 'custom' ? `Custom: ${instructionName}` : instructionName;
       this.core.summary
-        .addHeading(`Gemini Analysis Results (${instructionName})`, 2)
+        .addHeading(`Gemini Analysis Results (${instructionLabel})`, 2)
         .addRaw(response.text ?? 'no response from AI provided');
 
       this.core.info('Successfully received response from Gemini.');

@@ -14,7 +14,8 @@ export class LocalCore implements ICoreInterface {
       'compress': options.compress?.toString() || 'false',
       'working-directory': options.workingDirectory || '.',
       'output': options.output || 'parsed-repo.txt',
-      'instruction': options.instruction || 'architecture',
+      'llm-instruction': options.instruction || undefined,
+      'llm-custom-instruction': options.customInstruction || undefined,
       'gemini-model': options.geminiModel || process.env.GEMINI_MODEL
     }
   }

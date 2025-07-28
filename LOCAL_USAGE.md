@@ -1,6 +1,13 @@
 # Local Usage
 
-You can now run the codeaudits-parse tool locally without requiring GitHub Actions environment.
+You can now run th### Available Options
+
+- `-s, --style <style>`: Output style (default: 'plain')
+- `-c, --compress`: Enable compression
+- `-w, --working-directory <dir>`: Working directory (default: '.')
+- `-o, --output <file>`: Output file name (default: 'parsed-repo.txt')
+- `-i, --instruction <name>`: Name of the predefined instruction file for Gemini prompt
+- `--custom-instruction <name>`: Name of the custom instruction file from /.codeaudits/instructions directoryudits-parse tool locally without requiring GitHub Actions environment.
 
 ## Installation and Build
 
@@ -60,6 +67,13 @@ npm run local -- --working-directory ./src --output my-repo.txt
 ```bash
 npm run local -- --style markdown --instruction architecture
 ```
+
+5. **Use with custom instruction**:
+```bash
+npm run local -- --style markdown --custom-instruction simplification-prompts
+```
+
+**Note**: For custom instructions, ensure you have a `/.codeaudits/instructions/` directory in your project with the instruction file (e.g., `my-custom-analysis.md`).
 
 ## Development
 
