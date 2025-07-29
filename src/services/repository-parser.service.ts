@@ -43,7 +43,8 @@ export class RepositoryParser {
       securityCheck: false,
       topFilesLen: 10,
       quiet: true,
-      compress: compress
+      compress: compress,
+      ignore: '.codeaudits/**' // Ignore .codeaudits directory
     }
     this.core.debug(`Running repomix with options: ${JSON.stringify(cliOptions)}`)
 
