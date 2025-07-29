@@ -41,4 +41,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: parsed-repo
-          path: parsed-repo.txt
+          path: ${{ steps.extract_repo_name.outputs.repo_name }}/parsed-repo.txt
