@@ -45,7 +45,7 @@ jobs:
         id: audit
         with:
           style: markdown            # Format of the parsed output
-          compress: true             # Enable intelligent code parsing to reduce tokens
+          compress: true             # Enable intelligent code parsing to reduce tokens (default: false)
           llm-prompt: architecture-refactoring  # Optional: AI analysis prompt
           gemini-api-key: ${{ secrets.GEMINI_API_KEY }}  # Optional: for AI analysis
       
@@ -60,20 +60,13 @@ jobs:
 
 | Input | Description | Default | Required |
 |-------|-------------|---------|----------|
-| `style` | Parsed document style. Use 'markdown', 'xml' or 'plain' | `markdown` | No |
-| `compress` | Run intelligent code parsing to reduce tokens | `false` | No |
+| `style` | Parsed document style. Use 'markdown', 'xml' or 'plain' (it's Repomix config option) | `markdown` | No |
+| `compress` | Run intelligent code parsing to reduce tokens (it's Repomix config option) | `false` | No |
 | `working-directory` | The directory in which to run the action. Defaults to the repository root | `.` | No |
 | `llm-prompt` | The name of the prompt file for the Gemini prompt (see [Available Prompts](#available-prompts)) | | No |
 | `llm-custom-prompt` | The name of the custom prompt file from `/.codeaudits/prompts` directory in your repository | | No |
 | `gemini-api-key` | Gemini API key for AI-powered code analysis | | No |
 
-## Outputs
-
-| Output | Description |
-|--------|-------------|
-| `parse-metadata` | Metadata of the parsed repository |
-| `parsed-file-name` | Name of the parsed output file |
-| `submission-status` | Result of the submission to CodeAudits |
 
 ## Available Prompts
 

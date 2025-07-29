@@ -1,4 +1,4 @@
-name: External codebase - parse for LLM
+name: Parse only - external codebase
 
 on:
   workflow_dispatch:

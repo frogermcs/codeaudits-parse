@@ -1,5 +1,5 @@
 name: CodeAudits-Action
-description: Github Action to parse your source code
+description: Github Action to parse your project and do AI source analysis with Google Gemini
 author: Miroslaw Stanek
 
 branding:
@@ -11,7 +11,7 @@ inputs:
     description: Parsed document style. Use 'markdown', 'xml' or 'plain'
     default: 'markdown'
   compress:
-    description: Run intelligent code parsing to reduce tokens
+    description: Run intelligent code parsing to reduce tokens (see Repomix documentation for the details)
     default: 'false'
   working-directory:
     description: The directory in which to run the action. Defaults to the repository root.

@@ -1,4 +1,4 @@
-name: TEST - External codebase - parse for LLM
+name: /TEST/ Parse only - external codebase
 
 on:
   workflow_dispatch:
