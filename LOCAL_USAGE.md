@@ -1,6 +1,8 @@
 # Local Usage
 
-You can now run th### Available Options
+You can now run the codeaudits-parse tool locally without requiring GitHub Actions environment.
+
+### Available Options
 
 - `-s, --style <style>`: Output style (default: 'plain')
 - `-c, --compress`: Enable compression
