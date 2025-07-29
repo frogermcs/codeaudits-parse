@@ -1,10 +1,11 @@
 # CodeAudits Action
 
-[![CI](https://github.com/actions/hello-world-docker-action/actions/workflows/ci.yml/badge.svg)](https://github.com/actions/hello-world-docker-action/actions/workflows/ci.yml)
+## Overview
 
-A GitHub Action that parses your repository's code and submits it to [CodeAudits.ai](https://codeaudits.ai/) for analysis.
+This action uses the [Repomix](https://github.com/yamadashy/repomix) library to generate a comprehensive text representation of your codebase and optionally submits it to Google Gemini with selected prompt. This allows you to:
 
-Here's [CodeAudits documentation](https://codeaudits.ai/docs/howto) about how to use this GH Action.
+- Create a single document containing your entire codebase in a format suitable for LLM analysis
+- Analyze your code with predefined or custom prompts through Google Gemini
 
 ## What's New in v2.0.0
 
@@ -14,14 +15,6 @@ Here's [CodeAudits documentation](https://codeaudits.ai/docs/howto) about how to
 - **💻 Local Development**: Run the tool locally outside of GitHub Actions for faster development cycles
 - **⚡ Updated Dependencies**: Upgraded to Repomix v1.2.0 for improved parsing performance and reliability
 - **📚 Enhanced Examples**: More comprehensive GitHub Actions configuration examples and use cases
-
-## Overview
-
-This action uses the [Repomix](https://github.com/yamadashy/repomix) library to generate a comprehensive text representation of your codebase and optionally submits it to Google Gemini with selected prompt. This allows you to:
-
-- Create a single document containing your entire codebase in a readable format
-- Analyze your code structure and organization
-- Submit your code for AI auditing and analysis through Google Gemini
 
 ## Usage
 
