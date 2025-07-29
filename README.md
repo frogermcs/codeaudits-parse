@@ -6,6 +6,15 @@ A GitHub Action that parses your repository's code and submits it to [CodeAudits
 
 Here's [CodeAudits documentation](https://codeaudits.ai/docs/howto) about how to use this GH Action.
 
+## What's New in v2.0.0
+
+- **🤖 AI-Powered Code Audits**: Integrate with Google Gemini for intelligent code analysis and insights
+- **📝 Default Analysis Prompts**: 8 pre-built prompts covering architecture, SOLID principles, security, testing, and more
+- **🎯 Custom Prompt Support**: Create and use your own custom analysis prompts from `.codeaudits/prompts` directory
+- **💻 Local Development**: Run the tool locally outside of GitHub Actions for faster development cycles
+- **⚡ Updated Dependencies**: Upgraded to Repomix v1.2.0 for improved parsing performance and reliability
+- **📚 Enhanced Examples**: More comprehensive GitHub Actions configuration examples and use cases
+
 ## Overview
 
 This action uses the [Repomix](https://github.com/yamadashy/repomix) library to generate a comprehensive text representation of your codebase and optionally submits it to Google Gemini with selected prompt. This allows you to:
