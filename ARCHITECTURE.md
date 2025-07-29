@@ -147,7 +147,7 @@ The refactoring maintains backward compatibility:
 ## Project Information
 
 - **Name**: codeaudits-parse
-- **Version**: 1.2.0
+- **Version**: 2.0.0
 - **Repository**: frogermcs/codeaudits-parse
 
 ## Future Enhancements

@@ -17,7 +17,7 @@ const program = new Command()
 program
   .name('codeaudits-parse')
   .description('Parse repository code')
-  .version('1.2.0')
+  .version('2.0.0')
 
 program
   .option('-s, --style <style>', 'Output style', 'plain')
