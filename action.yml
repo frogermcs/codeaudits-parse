@@ -1,5 +1,5 @@
 name: CodeAudits-Action
-description: Github Action to parse your project and analyse it with Google Gemini for the code quality, refactoring, architecture and good practices. 
+description: Analyse your project with Google Gemini for the code quality, refactoring, architecture and good practices. 
 author: Miroslaw Stanek
 
 branding:
