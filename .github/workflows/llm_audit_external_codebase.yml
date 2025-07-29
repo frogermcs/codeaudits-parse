@@ -1,4 +1,4 @@
-name: Parse only - external codebase
+name: Parse and submit - external codebase
 
 on:
   workflow_dispatch:
@@ -34,7 +34,8 @@ jobs:
         uses: frogermcs/codeaudits-parse@v2.0.0
         with:
           style: markdown
-          compress: true
+          llm-prompt: architecture-refactoring
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
           working-directory: ${{ steps.extract_repo_name.outputs.repo_name }} # Set the working directory
 
       - name: Upload parsed file as artifact

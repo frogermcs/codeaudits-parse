@@ -166,6 +166,18 @@ your-repository/
 2. Add it as a repository secret named `GEMINI_API_KEY`
 3. The AI analysis results will appear in the GitHub Actions job summary
 
+## Example Workflows
+
+You can find complete workflow examples in the `.github/workflows` directory:
+
+- **[llm_audit.yml](.github/workflows/llm_audit.yml)** - Complete workflow with AI-powered audit using predefined prompts
+- **[llm_audit_custom_prompt.yml](.github/workflows/llm_audit_custom_prompt.yml)** - AI audit using custom prompts from your repository
+- **[llm_audit_external_codebase.yml](.github/workflows/llm_audit_external_codebase.yml)** - Audit external repositories with AI analysis
+- **[llm_parse_only.yml](.github/workflows/llm_parse_only.yml)** - Parse repository without AI analysis (output only)
+- **[llm_parse_only_external_codebase.yml](.github/workflows/llm_parse_only_external_codebase.yml)** - Parse external repositories without AI analysis
+
+These examples demonstrate different use cases and can be copied directly to your repository's `.github/workflows` directory.
+
 ## Viewing Results
 
 After the action completes:

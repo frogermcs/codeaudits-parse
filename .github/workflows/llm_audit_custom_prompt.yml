@@ -1,4 +1,4 @@
-name: Parse only - this codebase
+name: Parse and submit - this codebase, custom prompt
 
 on:
   workflow_dispatch:
@@ -11,12 +11,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Parse Repository
+      - name: Parse and Submit Repository
         uses: frogermcs/codeaudits-parse@v2.0.0
         id: parse
         with:
           style: markdown
           compress: false
+          llm-custom-prompt: simplification-prompts
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
       
       - name: Upload Prompt File as Artifact
         uses: actions/upload-artifact@v4
