@@ -8,7 +8,9 @@ This codebase has been refactored to follow clean architecture principles with c
 
 The project relies on the following key external libraries:
 - **@actions/core**: GitHub Actions toolkit for core functionality
+- **@google/genai**: Google Gemini AI SDK for AI-powered code analysis
 - **commander**: Command-line interface framework for local CLI usage
+- **dotenv**: Environment variable management for local development
 - **repomix**: Library for generating comprehensive text representations of codebases
 
 ## Structure
@@ -21,7 +23,18 @@ src/
 │   ├── github-actions-core.ts # GitHub Actions adapter
 │   └── local-core.ts     # Local development implementation
 ├── services/             # Business logic services
-│   └── repository-parser.service.ts # Repository parsing logic
+│   ├── repository-parser.service.ts # Repository parsing logic
+│   ├── gemini-submission.service.ts # AI analysis via Google Gemini
+│   └── prompt-loader.service.ts     # Prompt management and loading
+├── prompts/              # Predefined analysis prompts
+│   ├── architecture-refactoring.md
+│   ├── dry-kiss-yagni.md
+│   ├── essential-software-patterns.md
+│   ├── functionalities-analysis.md
+│   ├── missing-tests.md
+│   ├── possible-bugs.md
+│   ├── simplification-hints.md
+│   └── solid.md
 ├── app/                  # Application orchestration
 │   └── codeaudits-parse.app.ts # Main application coordinator
 ├── main.ts              # Thin orchestration layer
@@ -48,14 +61,33 @@ src/
   - Manages file operations
   - Extracts metadata
   - Generates summaries
+- **`GeminiSubmissionService`**: Handles AI-powered code analysis via Google Gemini
+  - Submits parsed code to Gemini AI for analysis
+  - Processes AI responses and adds them to job summaries
+  - Manages API key authentication and error handling
+- **`PromptLoaderService`**: Manages prompt loading and selection
+  - Loads predefined prompts from the prompts directory
+  - Validates prompt availability and provides error messages
+  - Supports both predefined and custom prompt text
 
-### 4. Application Layer (`app/`)
+### 4. Prompts (`prompts/`)
+- **Predefined Analysis Prompts**: Collection of specialized prompts for different types of code analysis
+  - `architecture-refactoring.md`: Architecture improvement suggestions
+  - `dry-kiss-yagni.md`: DRY, KISS, and YAGNI principles analysis
+  - `essential-software-patterns.md`: Design patterns identification and recommendations
+  - `functionalities-analysis.md`: Feature and functionality breakdown
+  - `missing-tests.md`: Test coverage gap analysis
+  - `possible-bugs.md`: Bug detection and risk assessment
+  - `simplification-hints.md`: Code simplification opportunities
+  - `solid.md`: SOLID principles compliance analysis
+
+### 5. Application Layer (`app/`)
 - **`CodeAuditsParseApp`**: Main application orchestrator
   - Coordinates between services
   - Handles the main execution flow
   - Manages error handling
 
-### 5. Entry Points
+### 6. Entry Points
 - **`main.ts`**: Thin orchestration layer with `run()` and `runLocal()` functions
 - **`index.ts`**: GitHub Actions entry point + library exports (includes all public interfaces and classes)
 - **`local.ts`**: CLI interface for local usage with Commander.js integration
@@ -133,8 +165,8 @@ await app.execute()
 ### Available Exports
 The library exports the following for programmatic use:
 - **Functions**: `run`, `runLocal`
-- **Classes**: `CodeAuditsParseApp`, `RepositoryParser`, `LocalCore`, `GitHubActionsCore`
-- **Interfaces**: `ICoreInterface`, `ISummary`, `ActionOptions`, `RepositoryParseOptions`, `ParseResult`
+- **Classes**: `CodeAuditsParseApp`, `RepositoryParser`, `LocalCore`, `GitHubActionsCore`, `GeminiSubmissionService`, `PromptLoaderService`
+- **Interfaces**: `ICoreInterface`, `ISummary`, `ActionOptions`, `RepositoryParseOptions`, `ParseResult`, `PromptResult`
 
 ## Migration Notes
 
