@@ -62,6 +62,17 @@ jobs:
           output: parsed-repo.txt
           working-directory: ${{ env.MAIN_BRANCH_PATH }}
 
+      - name: Analyze Pull Request Architecture
+        uses: ./feature-branch # Use local action for development
+        id: analyze-pr
+        with:
+          mode: parse-pr
+          working-directory: .
+          main-branch-file: ${{ env.MAIN_BRANCH_PATH }}/parsed-repo-main.txt
+          feature-branch-file: ${{ env.FEATURE_BRANCH_PATH }}/parsed-repo.txt
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+          # The action will automatically use 'pull-request-architecture-analysis' prompt for PR mode
+
       - name: Upload parsed main branch
         uses: actions/upload-artifact@v4
         with:

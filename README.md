@@ -12,7 +12,8 @@ This action uses the [Repomix](https://github.com/yamadashy/repomix) library to 
 - **🤖 AI-Powered Code Audits**: Integrate with Google Gemini for intelligent code analysis and insights
 - **📝 Default Analysis Prompts**: 8 pre-built prompts covering architecture, SOLID principles, security, testing, and more
 - **🎯 Custom Prompt Support**: Create and use your own custom analysis prompts from `.codeaudits/prompts` directory
-- **💻 Local Development**: Run the tool locally outside of GitHub Actions for faster development cycles
+- **� Pull Request Analysis Mode**: New `parse-pr` mode for analyzing architectural impact of Pull Requests
+- **�💻 Local Development**: Run the tool locally outside of GitHub Actions for faster development cycles
 - **⚡ Updated Dependencies**: Upgraded to Repomix v1.2.0 for improved parsing performance and reliability
 - **📚 Enhanced Examples**: More comprehensive GitHub Actions configuration examples and use cases
 
@@ -62,6 +63,7 @@ jobs:
 
 | Input | Description | Default | Required |
 |-------|-------------|---------|----------|
+| `mode` | Operation mode: 'parse-repo' for repository parsing or 'parse-pr' for Pull Request analysis | `parse-repo` | No |
 | `style` | Parsed document style. Use 'markdown', 'xml' or 'plain' (it's Repomix config option) | `markdown` | No |
 | `compress` | Run intelligent code parsing to reduce tokens (it's Repomix config option) | `false` | No |
 | `working-directory` | The directory in which to run the action. Defaults to the repository root | `.` | No |
@@ -69,6 +71,10 @@ jobs:
 | `llm-custom-prompt` | The name of the custom prompt file from `/.codeaudits/prompts` directory in your repository | | No |
 | `gemini-api-key` | Gemini API key for AI-powered code analysis | | No |
 | `includeFiles` | Space-separated list of files to include in the analysis (useful with changed files detection) | | No |
+| `main-branch-file` | Path to the parsed main branch file (required for `parse-pr` mode) | | No* |
+| `feature-branch-file` | Path to the parsed feature branch file (required for `parse-pr` mode) | | No* |
+
+*Required when `mode` is set to `parse-pr`
 
 
 ## Available Prompts
@@ -83,8 +89,89 @@ When using the `llm-prompt` input, you can choose from the following predefined 
 - `possible-bugs` - Detection of potential bugs and code issues
 - `simplification-hints` - Suggestions for code simplification and optimization
 - `solid` - Review based on SOLID principles
+- `pull-request-architecture-analysis` - Specialized prompt for Pull Request architectural impact analysis
 
 **Note:** If you provide an invalid prompt name, the action will fail with a helpful error message listing all available options.
+
+## Pull Request Analysis Mode
+
+The action includes a specialized `parse-pr` mode designed to analyze the architectural impact of Pull Requests by comparing the current repository state (main branch) with proposed changes (feature branch).
+
+### How it works:
+
+1. **Parse Full Repository (Main Branch)**: Creates a complete representation of your current codebase
+2. **Parse Changed Files (Feature Branch)**: Captures only the files that changed in your PR
+3. **Combined Analysis**: Submits both contexts to AI for architectural impact assessment
+4. **Automatic Prompt**: Uses the specialized `pull-request-architecture-analysis` prompt by default
+
+### Example PR Analysis Workflow:
+
+```yaml
+name: PR Architecture Analysis
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  analyze-pr-impact:
+    runs-on: ubuntu-latest
+    env:
+      MAIN_BRANCH_PATH: ./main-branch
+      FEATURE_BRANCH_PATH: ./feature-branch
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          path: ${{ env.MAIN_BRANCH_PATH }}
+
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          path: ${{ env.FEATURE_BRANCH_PATH }}
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          base_sha: ${{ github.event.pull_request.base.sha }}
+          path: ${{ env.FEATURE_BRANCH_PATH }}
+
+      # Parse full repository state (main branch)
+      - name: Parse Main Branch
+        uses: codeaudits/codeaudits-action@v2
+        with:
+          mode: parse-repo
+          output: parsed-repo-main.txt
+          working-directory: ${{ env.MAIN_BRANCH_PATH }}
+
+      # Parse only changed files (feature branch)
+      - name: Parse Feature Branch Changes
+        uses: codeaudits/codeaudits-action@v2
+        with:
+          mode: parse-repo
+          output: parsed-repo.txt
+          working-directory: ${{ env.FEATURE_BRANCH_PATH }}
+          includeFiles: ${{ steps.changed-files.outputs.all_changed_files }}
+
+      # Analyze PR architectural impact
+      - name: Analyze PR Architecture Impact
+        uses: codeaudits/codeaudits-action@v2
+        with:
+          mode: parse-pr
+          main-branch-file: ${{ env.MAIN_BRANCH_PATH }}/parsed-repo-main.txt
+          feature-branch-file: ${{ env.FEATURE_BRANCH_PATH }}/parsed-repo.txt
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+          # Automatically uses 'pull-request-architecture-analysis' prompt
+```
+
+**Benefits of PR Analysis Mode:**
+- 🔍 **Focused Analysis**: Compares actual changes against current codebase
+- 🏗️ **Architectural Impact**: Evaluates how changes affect code structure and design
+- 🚀 **Early Feedback**: Catches architectural issues before code is merged
+- 📊 **Comprehensive Context**: Provides both current state and proposed changes for informed analysis
 
 ## Custom Prompts
 
@@ -176,6 +263,38 @@ This example shows how to analyze only files that have changed compared to the m
     includeFiles: ${{ steps.changed-files.outputs.all_changed_files }}
 ```
 
+### Pull Request Architectural Analysis
+
+Analyze the architectural impact of a Pull Request:
+
+```yaml
+# First, parse the main branch (full repository)
+- name: Parse Main Branch
+  uses: codeaudits/codeaudits-action@v2
+  with:
+    mode: parse-repo
+    output: parsed-repo-main.txt
+    working-directory: ./main-branch
+
+# Then, parse the feature branch (changed files only)
+- name: Parse Feature Branch Changes
+  uses: codeaudits/codeaudits-action@v2
+  with:
+    mode: parse-repo
+    output: parsed-repo.txt
+    working-directory: ./feature-branch
+    includeFiles: ${{ steps.changed-files.outputs.all_changed_files }}
+
+# Finally, analyze the PR impact
+- name: Analyze PR Architecture Impact
+  uses: codeaudits/codeaudits-action@v2
+  with:
+    mode: parse-pr
+    main-branch-file: ./main-branch/parsed-repo-main.txt
+    feature-branch-file: ./feature-branch/parsed-repo.txt
+    gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+```
+
 **Setting up Gemini API Key:**
 1. Get your API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
 2. Add it as a repository secret named `GEMINI_API_KEY`
@@ -190,6 +309,7 @@ You can find complete workflow examples in the `.github/workflows` directory:
 - **[llm_audit_external_codebase.yml](.github/workflows/llm_audit_external_codebase.yml)** - Audit external repositories with AI analysis
 - **[llm_parse_only.yml](.github/workflows/llm_parse_only.yml)** - Parse repository without AI analysis (output only)
 - **[llm_parse_only_external_codebase.yml](.github/workflows/llm_parse_only_external_codebase.yml)** - Parse external repositories without AI analysis
+- **[pr-architecture-analysis.yml](.github/workflows/pr-architecture-analysis.yml)** - Analyze Pull Request architectural impact
 
 These examples demonstrate different use cases and can be copied directly to your repository's `.github/workflows` directory.
 

@@ -7,6 +7,10 @@ branding:
   color: gray-dark
 
 inputs:
+  mode:
+    description: 'Operation mode: "parse-repo" for repository parsing or "parse-pr" for Pull Request analysis'
+    default: 'parse-repo'
+    required: false
   style:
     description: Parsed document style. Use 'markdown', 'xml' or 'plain'
     default: 'markdown'
@@ -32,6 +36,12 @@ inputs:
   output:
     description: The filename containing parsed repository
     default: "parsed-repo.txt"
+  main-branch-file:
+    description: 'Path to the parsed main branch file (for parse-pr mode)'
+    required: false
+  feature-branch-file:
+    description: 'Path to the parsed feature branch file (for parse-pr mode)'
+    required: false
 
 # Define your outputs here.
 outputs:

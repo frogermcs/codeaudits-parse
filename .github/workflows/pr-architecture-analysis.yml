@@ -1,0 +1,74 @@
+name: Pull Request Architecture Analysis
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  pr-architecture-analysis:
+    runs-on: ubuntu-latest
+    name: Analyze Pull Request Architecture Impact
+    env:
+      MAIN_BRANCH_PATH: ./main-branch
+      FEATURE_BRANCH_PATH: ./feature-branch
+    steps:
+      - name: Checkout main branch to ${{ env.MAIN_BRANCH_PATH }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+          fetch-depth: 0
+          path: ${{ env.MAIN_BRANCH_PATH }}
+
+      - name: Checkout feature branch to ${{ env.FEATURE_BRANCH_PATH }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+          path: ${{ env.FEATURE_BRANCH_PATH }}
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          base_sha: ${{ github.event.pull_request.base.sha }}
+          path: ${{ env.FEATURE_BRANCH_PATH }}
+
+      - name: Parse Main Branch (Full Repository)
+        uses: ./feature-branch # Use local action for development
+        id: parse-main-branch
+        with:
+          mode: parse-repo
+          style: markdown
+          compress: false
+          output: parsed-repo-main.txt
+          working-directory: ${{ env.MAIN_BRANCH_PATH }}
+
+      - name: Parse Feature Branch (Changed Files Only)
+        uses: ./feature-branch # Use local action for development
+        id: parse-feature-branch
+        with:
+          mode: parse-repo
+          style: markdown
+          compress: false
+          output: parsed-repo.txt
+          working-directory: ${{ env.FEATURE_BRANCH_PATH }}
+          includeFiles: ${{ steps.changed-files.outputs.all_changed_files }}
+
+      - name: Analyze Pull Request Architecture
+        uses: ./feature-branch # Use local action for development
+        id: analyze-pr
+        with:
+          mode: parse-pr
+          working-directory: .
+          main-branch-file: ${{ env.MAIN_BRANCH_PATH }}/parsed-repo-main.txt
+          feature-branch-file: ${{ env.FEATURE_BRANCH_PATH }}/parsed-repo.txt
+          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+          # The action will automatically use 'pull-request-architecture-analysis' prompt for PR mode
+
+      - name: Upload Analysis Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-architecture-analysis
+          path: |
+            ${{ env.MAIN_BRANCH_PATH }}/parsed-repo-main.txt
+            ${{ env.FEATURE_BRANCH_PATH }}/parsed-repo.txt
