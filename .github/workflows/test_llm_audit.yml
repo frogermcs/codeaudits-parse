@@ -41,7 +41,7 @@ jobs:
           echo "Total changed files: ${{ steps.changed-files.outputs.all_changed_files_count }}"
 
       - name: Parse Feature Branch
-        uses: ./feature-branch
+        uses: ./
         id: parse-feature-branch
         with:
           style: markdown
@@ -51,7 +51,7 @@ jobs:
           includeFiles: ${{ steps.changed-files.outputs.all_changed_files }}
 
       - name: Parse Main Branch
-        uses: ./main-branch
+        uses: ./
         id: parse-main-branch
         with:
           style: markdown
