@@ -46,7 +46,7 @@ jobs:
         with:
           style: markdown
           compress: false
-          output: ./feature-branch/parsed-repo.txt
+          output: parsed-repo.txt
           working-directory: ./feature-branch
           includeFiles: ${{ steps.changed-files.outputs.all_changed_files }}
 
@@ -56,7 +56,7 @@ jobs:
         with:
           style: markdown
           compress: false
-          output: ./main-branch/parsed-repo.txt
+          output: parsed-repo.txt
           working-directory: ./main-branch
 
       - name: Upload parsed main branch
