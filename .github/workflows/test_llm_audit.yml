@@ -7,20 +7,23 @@ jobs:
   parse-repository:
     runs-on: ubuntu-latest
     name: Parse this repository for CodeAudits
+    env:
+      MAIN_BRANCH_PATH: ./main-branch
+      FEATURE_BRANCH_PATH: ./feature-branch
     steps:
-      - name: Checkout current branch to ./feature-branch
+      - name: Checkout current branch to ${{ env.FEATURE_BRANCH_PATH }}
         uses: actions/checkout@v4
         with:
           # Fetch more history for changed files detection
           fetch-depth: 0
-          path: ./feature-branch
+          path: ${{ env.FEATURE_BRANCH_PATH }}
 
-      - name: Checkout main branch to ./main-branch
+      - name: Checkout main branch to ${{ env.MAIN_BRANCH_PATH }}
         uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
-          path: ./main-branch
+          path: ${{ env.MAIN_BRANCH_PATH }}
 
       - name: Get changed files
         id: changed-files
@@ -28,7 +31,7 @@ jobs:
         with:
           # Get all changed files in the current branch compared to main
           base_sha: 'origin/main'
-          path: ./feature-branch
+          path: ${{ env.FEATURE_BRANCH_PATH }}
 
       - name: List all changed files
         run: |
@@ -41,32 +44,32 @@ jobs:
           echo "Total changed files: ${{ steps.changed-files.outputs.all_changed_files_count }}"
 
       - name: Parse Feature Branch
-        uses: ./
+        uses: ./feature-branch # normally it'll be codeaudits-parse action, but here let's use local cloned version
         id: parse-feature-branch
         with:
           style: markdown
           compress: false
           output: parsed-repo.txt
-          working-directory: ./feature-branch
+          working-directory: ${{ env.FEATURE_BRANCH_PATH }}
           includeFiles: ${{ steps.changed-files.outputs.all_changed_files }}
 
       - name: Parse Main Branch
-        uses: ./
+        uses: ./feature-branch # normally it'll be codeaudits-parse action, but here let's use local cloned version
         id: parse-main-branch
         with:
           style: markdown
           compress: false
           output: parsed-repo.txt
-          working-directory: ./main-branch
+          working-directory: ${{ env.MAIN_BRANCH_PATH }}
 
       - name: Upload parsed main branch
         uses: actions/upload-artifact@v4
         with:
           name: parsed-repo-main.txt
-          path: ./main-branch/parsed-repo.txt
+          path: ${{ env.MAIN_BRANCH_PATH }}/parsed-repo.txt
 
       - name: Upload parsed feature branch
         uses: actions/upload-artifact@v4
         with:
           name: parsed-repo.txt
-          path: ./feature-branch/parsed-repo.txt
+          path: ${{ env.FEATURE_BRANCH_PATH }}/parsed-repo.txt
