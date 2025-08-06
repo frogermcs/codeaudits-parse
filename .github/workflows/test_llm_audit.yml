@@ -46,6 +46,7 @@ jobs:
         with:
           style: markdown
           compress: false
+          output: ./feature-branch/parsed-repo.txt
           # llm-prompt: architecture-refactoring
           # gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
           includeFiles: ${{ steps.changed-files.outputs.all_changed_files }}
@@ -56,6 +57,7 @@ jobs:
         with:
           style: markdown
           compress: false
+          output: ./main-branch/parsed-repo.txt
           # llm-prompt: architecture-refactoring
           # gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
           # includeFiles: ${{ steps.changed-files.outputs.all_changed_files }}
