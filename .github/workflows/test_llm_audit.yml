@@ -47,8 +47,7 @@ jobs:
           style: markdown
           compress: false
           output: ./feature-branch/parsed-repo.txt
-          # llm-prompt: architecture-refactoring
-          # gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+          working-directory: ./feature-branch
           includeFiles: ${{ steps.changed-files.outputs.all_changed_files }}
 
       - name: Parse Main Branch
@@ -58,9 +57,7 @@ jobs:
           style: markdown
           compress: false
           output: ./main-branch/parsed-repo.txt
-          # llm-prompt: architecture-refactoring
-          # gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
-          # includeFiles: ${{ steps.changed-files.outputs.all_changed_files }}
+          working-directory: ./main-branch
 
       - name: Upload parsed main branch
         uses: actions/upload-artifact@v4
