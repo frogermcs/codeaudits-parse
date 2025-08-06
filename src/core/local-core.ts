@@ -9,6 +9,11 @@ export class LocalCore implements ICoreInterface {
   private outputs: Record<string, string> = {}
   
   constructor(options: any = {}) {
+    // Handle includeFiles: if it's an array, join it with spaces; if it's a string, keep as is
+    const includeFilesValue = Array.isArray(options.includeFiles) 
+      ? options.includeFiles.join(' ')
+      : (options.includeFiles || '')
+    
     this.inputs = {
       'style': options.style || 'plain',
       'compress': options.compress?.toString() || 'false',
@@ -17,7 +22,7 @@ export class LocalCore implements ICoreInterface {
       'llm-prompt': options.prompt || undefined,
       'llm-custom-prompt': options.customPrompt || undefined,
       'gemini-model': options.geminiModel || process.env.GEMINI_MODEL,
-      'includeFiles': options.includeFiles || ''
+      'includeFiles': includeFilesValue
     }
   }
 
