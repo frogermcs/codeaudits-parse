@@ -26,8 +26,13 @@ program
   .option('-o, --output <file>', 'Output file name', 'parsed-repo.txt')
   .option('-i, --prompt <name>', 'Name of the predefined prompt file for Gemini prompt')
   .option('--custom-prompt <name>', 'Name of the custom prompt file from /.codeaudits/prompts directory')
+  .option('--include-files <files>', 'Space-separated list of files to include in the analysis')
   .action(async (options) => {
     try {
+      // Convert includeFiles string to array if provided
+      if (options.includeFiles) {
+        options.includeFiles = options.includeFiles.split(/\s+/).filter((file: string) => file.trim().length > 0)
+      }
       await runLocal(options)
     } catch (error) {
       console.error('Error:', error)

@@ -8,6 +8,7 @@ export interface RepositoryParseOptions {
   compress: boolean
   outputFilePath: string
   workingDirectory: string
+  includeFiles?: string[]
 }
 
 export interface ParseResult {
@@ -27,11 +28,17 @@ export class RepositoryParser {
    * Parse a repository and generate output file
    */
   async parseRepository(options: RepositoryParseOptions): Promise<ParseResult> {
-    const { style, compress, outputFilePath, workingDirectory } = options
+    const { style, compress, outputFilePath, workingDirectory, includeFiles } = options
 
     this.core.debug(
       `Parsing codebase into ${outputFilePath} file, with style ${style} in directory ${workingDirectory}`
     )
+
+    if (includeFiles && includeFiles.length > 0) {
+      this.core.info(
+        `Including specific files in analysis: ${includeFiles.join(', ')}`
+      )
+    }
 
     const absoluteWorkingDirectory = path.resolve(process.cwd(), workingDirectory)
 
@@ -46,6 +53,12 @@ export class RepositoryParser {
       compress: compress,
       ignore: '.codeaudits/**' // Ignore .codeaudits directory
     }
+
+    // Add include option if includeFiles is provided
+    if (includeFiles && includeFiles.length > 0) {
+      cliOptions.include = includeFiles.join(',')
+    }
+
     this.core.debug(`Running repomix with options: ${JSON.stringify(cliOptions)}`)
 
     const result = await runCli(['.'], absoluteWorkingDirectory, cliOptions)
@@ -72,7 +85,7 @@ export class RepositoryParser {
    * Generate parsing summary for display
    */
   generateSummary(options: RepositoryParseOptions, packResult: PackResult): void {
-    const { style, compress, workingDirectory, outputFilePath } = options
+    const { style, compress, workingDirectory, outputFilePath, includeFiles } = options
 
     const parseMetadata = {
         'totalFiles' : packResult.totalFiles,
@@ -82,15 +95,32 @@ export class RepositoryParser {
         'processedFilesCount': packResult.processedFiles.length,
     }
 
+    const summaryTable = [
+      ['Parsed output file', outputFilePath],
+      ['Style', style],
+      ['Compress', compress.toString()],
+      ['Working Directory', workingDirectory]
+    ]
+
+    // Add included files info if present
+    if (includeFiles && includeFiles.length > 0) {
+      summaryTable.push(['Included Files', `${includeFiles.length} files specified`])
+    }
+
     this.core.summary
       .addHeading('Code Parsing Summary')
-      .addTable([
-        ['Parsed output file', outputFilePath],
-        ['Style', style],
-        ['Compress', compress.toString()],
-        ['Working Directory', workingDirectory]
-      ])
+      .addTable(summaryTable)
       .addBreak()
+
+    // Show included files if any
+    if (includeFiles && includeFiles.length > 0) {
+      this.core.summary
+        .addHeading('Included Files', 3)
+        .addCodeBlock(includeFiles.join('\n'), '')
+        .addBreak()
+    }
+
+    this.core.summary
       .addHeading('Parsed Metadata', 2)
       .addCodeBlock(JSON.stringify(parseMetadata, null, 2), 'json')
   }

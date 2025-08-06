@@ -68,6 +68,7 @@ jobs:
 | `llm-prompt` | The name of the prompt file for the Gemini prompt (see [Available Prompts](#available-prompts)) | | No |
 | `llm-custom-prompt` | The name of the custom prompt file from `/.codeaudits/prompts` directory in your repository | | No |
 | `gemini-api-key` | Gemini API key for AI-powered code analysis | | No |
+| `includeFiles` | Space-separated list of files to include in the analysis (useful with changed files detection) | | No |
 
 
 ## Available Prompts

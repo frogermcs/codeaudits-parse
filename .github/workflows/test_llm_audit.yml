@@ -39,6 +39,7 @@ jobs:
           compress: false
           llm-prompt: architecture-refactoring
           gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+          includeFiles: ${{ steps.changed-files.outputs.all_changed_files }}
       
       - name: Upload Prompt File as Artifact
         uses: actions/upload-artifact@v4

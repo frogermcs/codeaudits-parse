@@ -10,6 +10,7 @@ export interface ActionOptions {
   workingDirectory: string
   prompt?: string
   customPrompt?: string
+  includeFiles?: string[]
 }
 
 /**
@@ -31,13 +32,19 @@ export class CodeAuditsParseApp {
    * Extract options from core inputs
    */
   extractOptionsFromCore(): ActionOptions {
+    const includeFilesInput = this.core.getInput('includeFiles')
+    const includeFiles = includeFilesInput 
+      ? includeFilesInput.split(/\s+/).filter(file => file.trim().length > 0)
+      : undefined
+
     return {
       style: this.core.getInput('style'),
       compress: this.core.getBooleanInput('compress'),
       outputFilePath: this.core.getInput('output') || 'parsed-repo.txt',
       workingDirectory: this.core.getInput('working-directory'),
       prompt: this.core.getInput('llm-prompt') || undefined,
-      customPrompt: this.core.getInput('llm-custom-prompt') || undefined
+      customPrompt: this.core.getInput('llm-custom-prompt') || undefined,
+      includeFiles: includeFiles
     }
   }
 
@@ -53,7 +60,8 @@ export class CodeAuditsParseApp {
         style: actionOptions.style,
         compress: actionOptions.compress,
         outputFilePath: actionOptions.outputFilePath,
-        workingDirectory: actionOptions.workingDirectory
+        workingDirectory: actionOptions.workingDirectory,
+        includeFiles: actionOptions.includeFiles
       }
 
       const parseResult = await this.repositoryParser.parseRepository(parseOptions)
