@@ -28,6 +28,7 @@ jobs:
         with:
           # Get all changed files in the current branch compared to main
           base_sha: 'origin/main'
+          path: ./feature-branch
 
       - name: List all changed files
         run: |
