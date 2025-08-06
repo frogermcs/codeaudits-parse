@@ -155,6 +155,27 @@ your-repository/
     gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
 ```
 
+### Focus Analysis on Changed Files Only
+
+This example shows how to analyze only files that have changed compared to the main branch:
+
+```yaml
+- name: Get changed files
+  id: changed-files
+  uses: tj-actions/changed-files@v44
+  with:
+    base_sha: 'origin/main'
+
+- name: Run AI Analysis on Changed Files
+  uses: codeaudits/codeaudits-action@v1
+  with:
+    style: markdown
+    compress: true
+    llm-prompt: possible-bugs
+    gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+    includeFiles: ${{ steps.changed-files.outputs.all_changed_files }}
+```
+
 **Setting up Gemini API Key:**
 1. Get your API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
 2. Add it as a repository secret named `GEMINI_API_KEY`

@@ -10,6 +10,7 @@ You can now run the codeaudits-parse tool locally without requiring GitHub Actio
 - `-o, --output <file>`: Output file name (default: 'parsed-repo.txt')
 - `-i, --prompt <name>`: Name of the predefined prompt file for Gemini prompt
 - `--custom-prompt <name>`: Name of the custom prompt file from /.codeaudits/prompts directory
+- `--include-files <files>`: Space-separated list of files to include in the analysis
 
 ## Installation and Build
 
@@ -47,6 +48,7 @@ npm run local -- [options]
 - `-w, --working-directory <dir>`: Working directory (default: '.')
 - `-o, --output <file>`: Output file name (default: 'parsed-repo.txt')
 - `-i, --prompt <name>`: Name of the prompt file for Gemini prompt
+- `--include-files <files>`: Space-separated list of files to include in the analysis
 
 ### Examples
 
@@ -73,6 +75,16 @@ npm run local -- --style markdown --prompt architecture
 5. **Use with custom prompt**:
 ```bash
 npm run local -- --style markdown --custom-prompt simplification-prompts
+```
+
+6. **Parse only specific files** (useful for focused analysis):
+```bash
+npm run local -- --style markdown --include-files "src/app/codeaudits-parse.app.ts src/services/repository-parser.service.ts"
+```
+
+7. **Combine with AI analysis on specific files**:
+```bash
+npm run local -- --style markdown --prompt possible-bugs --include-files "src/main.ts src/index.ts"
 ```
 
 **Note**: For custom prompts, ensure you have a `/.codeaudits/prompts/` directory in your project with the prompt file (e.g., `my-custom-analysis.md`).
