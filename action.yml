@@ -38,6 +38,8 @@ outputs:
     description: Name of the parsed output file
   submission-status:
     description: Result of the submission to CodeAudits
+  output:
+    description: The filename containing parsed repository
 
 runs:
   using: docker
