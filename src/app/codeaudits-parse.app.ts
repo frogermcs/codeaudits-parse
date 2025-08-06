@@ -40,7 +40,7 @@ export class CodeAuditsParseApp {
     return {
       style: this.core.getInput('style'),
       compress: this.core.getBooleanInput('compress'),
-      outputFilePath: this.core.getInput('output') || 'parsed-repo.txt',
+      outputFilePath: this.core.getInput('output'),
       workingDirectory: this.core.getInput('working-directory'),
       prompt: this.core.getInput('llm-prompt') || undefined,
       customPrompt: this.core.getInput('llm-custom-prompt') || undefined,

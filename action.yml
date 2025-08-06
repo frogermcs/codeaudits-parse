@@ -29,6 +29,9 @@ inputs:
   includeFiles:
     description: 'Space-separated list of files to include in the analysis (e.g., from changed files)'
     required: false
+  output:
+    description: The filename containing parsed repository
+    default: "parsed-repo.txt"
 
 # Define your outputs here.
 outputs:
@@ -38,8 +41,6 @@ outputs:
     description: Name of the parsed output file
   submission-status:
     description: Result of the submission to CodeAudits
-  output:
-    description: The filename containing parsed repository
 
 runs:
   using: docker
