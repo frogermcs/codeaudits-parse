@@ -8,11 +8,19 @@ jobs:
     runs-on: ubuntu-latest
     name: Parse this repository for CodeAudits
     steps:
-      - name: Checkout
+      - name: Checkout current branch to ./feature-branch
         uses: actions/checkout@v4
         with:
           # Fetch more history for changed files detection
           fetch-depth: 0
+          path: ./feature-branch
+
+      - name: Checkout main branch to ./main-branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          path: ./main-branch
 
       - name: Get changed files
         id: changed-files
@@ -31,18 +39,34 @@ jobs:
           echo ""
           echo "Total changed files: ${{ steps.changed-files.outputs.all_changed_files_count }}"
 
-      - name: Parse and SubmitRepository
-        uses: ./
-        id: parse
+      - name: Parse Feature Branch
+        uses: ./feature-branch
+        id: parse-feature-branch
         with:
           style: markdown
           compress: false
-          llm-prompt: architecture-refactoring
-          gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+          # llm-prompt: architecture-refactoring
+          # gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
           includeFiles: ${{ steps.changed-files.outputs.all_changed_files }}
-      
-      - name: Upload Prompt File as Artifact
+
+      - name: Parse Main Branch
+        uses: ./main-branch
+        id: parse-main-branch
+        with:
+          style: markdown
+          compress: false
+          # llm-prompt: architecture-refactoring
+          # gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
+          # includeFiles: ${{ steps.changed-files.outputs.all_changed_files }}
+
+      - name: Upload parsed main branch
+        uses: actions/upload-artifact@v4
+        with:
+          name: parsed-repo-main.txt
+          path: ./main-branch/parsed-repo.txt
+
+      - name: Upload parsed feature branch
         uses: actions/upload-artifact@v4
         with:
           name: parsed-repo.txt
-          path: parsed-repo.txt
+          path: ./feature-branch/parsed-repo.txt
