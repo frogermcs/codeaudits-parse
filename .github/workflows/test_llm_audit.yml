@@ -68,7 +68,7 @@ jobs:
         with:
           mode: parse-pr
           working-directory: .
-          main-branch-file: ${{ env.MAIN_BRANCH_PATH }}/parsed-repo-main.txt
+          main-branch-file: ${{ env.MAIN_BRANCH_PATH }}/parsed-repo.txt
           feature-branch-file: ${{ env.FEATURE_BRANCH_PATH }}/parsed-repo.txt
           gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
           # The action will automatically use 'pull-request-architecture-analysis' prompt for PR mode
